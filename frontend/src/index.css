@@ -1,0 +1,16 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* NHS.UK Frontend overrides TailwindCSS where needed for accessibility */
+body {
+  margin: 0;
+  /* NHS.UK Frontend provides its own font stack, but we keep fallbacks */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
