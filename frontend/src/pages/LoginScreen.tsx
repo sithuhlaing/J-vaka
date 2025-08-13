@@ -1,172 +1,186 @@
 import React, { useState } from 'react';
 
 interface LoginScreenProps {
-    onLogin: (email: string, password: string, role: 'employee' | 'oh-professional' | 'manager') => void;
+    onLogin: (email: string, password: string, role: 'employee' | 'oh_professional' | 'manager') => void;
 }
 
 const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [role, setRole] = useState<'employee' | 'oh-professional' | 'manager'>('employee');
-    const [rememberMe, setRememberMe] = useState(false);
+    const [formData, setFormData] = useState({
+        email: '',
+        password: '',
+        role: '' as 'employee' | 'oh_professional' | 'manager' | '',
+        remember: false
+    });
     const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState('');
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
+        setError('');
         
-        // Simulate API call delay
-        setTimeout(() => {
-            onLogin(email, password, role);
+        try {
+            // Simulate API call
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            if (!formData.email || !formData.password || !formData.role) {
+                throw new Error('Please fill in all required fields');
+            }
+            
+            onLogin(formData.email, formData.password, formData.role);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Authentication failed');
+        } finally {
             setIsLoading(false);
-        }, 1000);
-    };
-
-    const demoUsers = [
-        { role: 'employee', email: 'john.smith@company.com', name: 'John Smith (Employee)' },
-        { role: 'oh-professional', email: 'dr.johnson@company.com', name: 'Dr. Sarah Johnson (OH Professional)' },
-        { role: 'manager', email: 'rebecca.martinez@company.com', name: 'Rebecca Martinez (Manager)' }
-    ];
-
-    const fillDemoUser = (userRole: string) => {
-        const user = demoUsers.find(u => u.role === userRole);
-        if (user) {
-            setEmail(user.email);
-            setPassword('demo123');
-            setRole(user.role as 'employee' | 'oh-professional' | 'manager');
         }
     };
 
+    const handleInputChange = (field: string, value: string | boolean) => {
+        setFormData(prev => ({ ...prev, [field]: value }));
+    };
+
     return (
-        <div className="nhsuk-width-container">
-            <main className="nhsuk-main-wrapper" id="main-content" role="main">
-                <div className="nhsuk-grid-row">
-                    <div className="nhsuk-grid-column-two-thirds">
-                        <h1 className="nhsuk-heading-xl">Sign in to NHS EHR System</h1>
-                        
-                        <form onSubmit={handleSubmit} className="nhsuk-form">
-                            <div className="nhsuk-form-group">
-                                <label className="nhsuk-label" htmlFor="email">
-                                    Email address
-                                </label>
-                                <div className="nhsuk-hint" id="email-hint">
-                                    Enter the email address you use to access your account
+        <div className="nhsuk-template">
+            <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+                <div className="sm:mx-auto sm:w-full sm:max-w-md">
+                    {/* Header Component */}
+                    <div className="text-center mb-8">
+                        <img 
+                            src="/nhs-logo.svg" 
+                            alt="NHS Logo" 
+                            className="mx-auto h-10 w-30 mb-4"
+                            style={{ width: '120px', height: '40px' }}
+                        />
+                        <h1 className="text-3xl font-bold text-gray-900">
+                            OH eHR System
+                        </h1>
+                    </div>
+                    
+                    <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+                        {/* Form Component */}
+                        <form className="space-y-6" onSubmit={handleSubmit}>
+                            {error && (
+                                <div className="nhsuk-error-message">
+                                    <span className="nhsuk-u-visually-hidden">Error:</span>
+                                    {error}
                                 </div>
+                            )}
+                            
+                            {/* Email Input */}
+                            <div>
+                                <label htmlFor="email" className="nhsuk-label">
+                                    NHS Email
+                                </label>
                                 <input
-                                    className="nhsuk-input"
                                     id="email"
                                     name="email"
                                     type="email"
-                                    spellCheck={false}
-                                    autoComplete="email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    aria-describedby="email-hint"
                                     required
+                                    className="nhsuk-input"
+                                    placeholder="NHS Email"
+                                    value={formData.email}
+                                    onChange={(e) => handleInputChange('email', e.target.value)}
                                 />
                             </div>
 
-                            <div className="nhsuk-form-group">
-                                <label className="nhsuk-label" htmlFor="password">
+                            {/* Password Input */}
+                            <div>
+                                <label htmlFor="password" className="nhsuk-label">
                                     Password
                                 </label>
                                 <input
-                                    className="nhsuk-input"
                                     id="password"
                                     name="password"
                                     type="password"
-                                    autoComplete="current-password"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
                                     required
+                                    className="nhsuk-input"
+                                    placeholder="Password"
+                                    value={formData.password}
+                                    onChange={(e) => handleInputChange('password', e.target.value)}
                                 />
                             </div>
 
-                            <div className="nhsuk-form-group">
-                                <label className="nhsuk-label" htmlFor="role">
-                                    Login as
+                            {/* Role Select */}
+                            <div>
+                                <label htmlFor="role" className="nhsuk-label">
+                                    Role
                                 </label>
                                 <select
-                                    className="nhsuk-select"
                                     id="role"
                                     name="role"
-                                    value={role}
-                                    onChange={(e) => setRole(e.target.value as 'employee' | 'oh-professional' | 'manager')}
+                                    required
+                                    className="nhsuk-select"
+                                    value={formData.role}
+                                    onChange={(e) => handleInputChange('role', e.target.value)}
                                 >
+                                    <option value="">Select your role</option>
                                     <option value="employee">Employee</option>
-                                    <option value="oh-professional">OH Professional</option>
+                                    <option value="oh_professional">OH Professional</option>
                                     <option value="manager">Manager</option>
                                 </select>
                             </div>
 
-                            <div className="nhsuk-checkboxes nhsuk-form-group">
+                            {/* Remember Me Checkbox */}
+                            <div className="nhsuk-checkboxes">
                                 <div className="nhsuk-checkboxes__item">
                                     <input
                                         className="nhsuk-checkboxes__input"
-                                        id="remember-me"
-                                        name="remember-me"
+                                        id="remember"
+                                        name="remember"
                                         type="checkbox"
-                                        checked={rememberMe}
-                                        onChange={(e) => setRememberMe(e.target.checked)}
+                                        checked={formData.remember}
+                                        onChange={(e) => handleInputChange('remember', e.target.checked)}
                                     />
-                                    <label className="nhsuk-label nhsuk-checkboxes__label" htmlFor="remember-me">
+                                    <label className="nhsuk-label nhsuk-checkboxes__label" htmlFor="remember">
                                         Remember me
                                     </label>
                                 </div>
                             </div>
 
-                            <button
-                                className="nhsuk-button"
-                                data-module="nhsuk-button"
-                                type="submit"
-                                disabled={isLoading}
-                            >
-                                {isLoading ? 'Signing in...' : 'Sign in'}
-                            </button>
-
-                            <p className="nhsuk-body">
-                                <a className="nhsuk-link" href="#forgot-password">
-                                    Forgot your password?
-                                </a>
-                            </p>
+                            {/* Submit Button */}
+                            <div>
+                                <button
+                                    type="submit"
+                                    disabled={isLoading}
+                                    className="nhsuk-button nhsuk-button--primary w-full"
+                                >
+                                    {isLoading ? 'Signing In...' : 'Sign In'}
+                                </button>
+                            </div>
                         </form>
-                    </div>
 
-                    <div className="nhsuk-grid-column-one-third">
-                        <div className="nhsuk-card">
-                            <div className="nhsuk-card__content">
-                                <h2 className="nhsuk-card__heading nhsuk-heading-m">
-                                    Demo accounts
-                                </h2>
-                                <p className="nhsuk-card__description">
-                                    Use these demo accounts to explore different user roles
-                                </p>
-                                
-                                <div className="nhsuk-u-margin-bottom-4">
-                                    {demoUsers.map((user, index) => (
-                                        <div key={index} className="nhsuk-u-margin-bottom-3">
-                                            <h3 className="nhsuk-heading-s nhsuk-u-margin-bottom-1">{user.name}</h3>
-                                            <p className="nhsuk-body-s nhsuk-u-margin-bottom-2">{user.email}</p>
-                                            <button
-                                                type="button"
-                                                className="nhsuk-button nhsuk-button--secondary"
-                                                onClick={() => fillDemoUser(user.role)}
-                                            >
-                                                Use this account
-                                            </button>
-                                        </div>
-                                    ))}
-                                </div>
+                        {/* Links Component */}
+                        <div className="mt-6 space-y-2 text-center">
+                            <div>
+                                <a 
+                                    href="/forgot-password" 
+                                    className="nhsuk-link"
+                                >
+                                    Forgot password?
+                                </a>
+                            </div>
+                            <div>
+                                <a 
+                                    href="/help" 
+                                    className="nhsuk-link"
+                                >
+                                    Need help?
+                                </a>
                             </div>
                         </div>
 
-                        <div className="nhsuk-inset-text">
-                            <span className="nhsuk-u-visually-hidden">Information: </span>
-                            <p>Need help? Contact IT Support for assistance with accessing your account.</p>
+                        {/* Demo Users for Development */}
+                        <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+                            <h3 className="text-sm font-medium text-blue-900 mb-2">Demo Users:</h3>
+                            <div className="space-y-1 text-xs text-blue-700">
+                                <div>Employee: john.smith@nhs.uk / password123</div>
+                                <div>OH Professional: dr.johnson@nhs.uk / password123</div>
+                                <div>Manager: manager@nhs.uk / password123</div>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </main>
+            </div>
         </div>
     );
 };

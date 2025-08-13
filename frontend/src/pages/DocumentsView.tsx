@@ -1,7 +1,12 @@
 import React, { useState } from 'react';
 import { Search, Upload, FolderOpen, Eye, Download, Share2 } from 'lucide-react';
+import { AppScreen } from '../contexts/NavigationContext';
 
-const DocumentsView = () => {
+interface DocumentsViewProps {
+    onNavigate: (screen: AppScreen, data?: any) => void;
+}
+
+const DocumentsView: React.FC<DocumentsViewProps> = ({ onNavigate }) => {
     const [activeCategory, setActiveCategory] = useState('all');
     const [searchTerm, setSearchTerm] = useState('');
 

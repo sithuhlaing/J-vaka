@@ -1,7 +1,12 @@
 import React, { useState } from 'react';
 import { Search, Video, FileText, Paperclip, Send, Smile } from 'lucide-react';
+import { AppScreen } from '../contexts/NavigationContext';
 
-const ChatInterface = () => {
+interface ChatInterfaceProps {
+    onNavigate: (screen: AppScreen, data?: any) => void;
+}
+
+const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate }) => {
     const [messageText, setMessageText] = useState('');
     const [selectedChat, setSelectedChat] = useState(0);
 

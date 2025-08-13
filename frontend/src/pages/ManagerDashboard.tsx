@@ -1,7 +1,12 @@
 import React from 'react';
-import { TrendingUp, Users, AlertTriangle, FileText, BarChart3, Calendar, Settings } from 'lucide-react';
+import { TrendingUp, Users, AlertTriangle, BarChart3, Calendar, Settings } from 'lucide-react';
+import { AppScreen } from '../contexts/NavigationContext';
 
-const ManagerDashboard = () => {
+interface ManagerDashboardProps {
+    onNavigate: (screen: AppScreen, data?: any) => void;
+}
+
+const ManagerDashboard: React.FC<ManagerDashboardProps> = ({ onNavigate }) => {
     const teamAlerts = [
         {
             id: 1,

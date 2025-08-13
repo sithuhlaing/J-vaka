@@ -3,14 +3,283 @@
 @tailwind utilities;
 
 /* NHS.UK Frontend overrides TailwindCSS where needed for accessibility */
-body {
+html, body {
   margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  width: 100%;
   /* NHS.UK Frontend provides its own font stack, but we keep fallbacks */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
+#root {
+  min-height: 100vh;
+  width: 100%;
+}
+
+/* Fix shrinking background and ensure full viewport coverage */
+.nhsuk-template {
+  min-height: 100vh;
+  width: 100%;
+  background-color: #f0f4f5; /* NHS UK background color */
+}
+
+.nhsuk-width-container {
+  max-width: none !important;
+  width: 100%;
+  margin: 0;
+  padding: 0 16px;
+}
+
+.nhsuk-main-wrapper {
+  min-height: calc(100vh - 200px); /* Account for header height */
+  background-color: #f0f4f5;
+  padding: 20px 0;
+}
+
+/* Ensure NHS UK header and navigation have consistent colors */
+.nhsuk-header {
+  background-color: #005eb8 !important; /* NHS UK blue - same as default */
+}
+
+.nhsuk-header__navigation {
+  background-color: #005eb8 !important; /* Match header color */
+}
+
+.nhsuk-header__navigation-list {
+  background-color: #005eb8 !important;
+}
+
+.nhsuk-header__navigation-link {
+  color: white !important;
+}
+
+.nhsuk-header__navigation-link:hover {
+  background-color: #003087 !important; /* Darker blue for hover */
+}
+
+.nhsuk-header__navigation-link--active {
+  background-color: #003087 !important; /* Darker blue for active */
+}
+
+/* Responsive navigation */
+.nhsuk-header__navigation-list {
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.nhsuk-header__navigation-item {
+  flex: 1 1 auto;
+  min-width: 120px;
+}
+
+@media (max-width: 768px) {
+  .nhsuk-header__navigation-list {
+    flex-direction: column;
+  }
+  
+  .nhsuk-header__navigation-item {
+    flex: none;
+    width: 100%;
+  }
+  
+  .nhsuk-header__navigation-link {
+    padding: 12px 16px !important;
+    justify-content: flex-start !important;
+  }
+  
+  .nhsuk-header__content {
+    flex-direction: column !important;
+    gap: 0.5rem !important;
+    align-items: flex-start !important;
+  }
+  
+  .nhsuk-header__content > div:last-child {
+    margin-left: 0 !important;
+    align-self: stretch;
+    justify-content: space-between !important;
+  }
+}
+
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+/* Intelligent button layout that wraps automatically */
+.button-flex-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: flex-start;
+}
+
+.button-flex-wrap button {
+  flex: 1 1 auto;
+  min-width: 140px; /* Minimum button width */
+  max-width: 200px; /* Maximum button width */
+  min-height: 4rem;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
+/* Ensure button text doesn't overflow */
+.button-flex-wrap button span {
+  text-align: center;
+  line-height: 1.2;
+  word-break: break-word;
+}
+
+/* Fix small action buttons in appointment cards */
+.appointment-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.appointment-actions button {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: fit-content;
+  flex-shrink: 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .button-flex-wrap {
+    justify-content: center;
+  }
+  
+  .button-flex-wrap button {
+    min-width: 120px;
+    min-height: 3.5rem;
+    padding: 0.75rem 0.5rem;
+  }
+  
+  .button-flex-wrap button span {
+    font-size: 0.875rem;
+  }
+  
+  .appointment-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .appointment-actions button {
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .button-flex-wrap button {
+    min-width: 100px;
+    min-height: 3rem;
+  }
+  
+  .button-flex-wrap button span {
+    font-size: 0.75rem;
+  }
+}
+
+/* Comprehensive responsive layout fixes */
+.responsive-container {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+/* Fix grid layouts for all screen sizes */
+.grid {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.grid > * {
+  min-width: 0; /* Prevent overflow in flex/grid children */
+}
+
+/* Card responsive fixes */
+.bg-white {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Mobile-first responsive grid adjustments */
+@media (max-width: 768px) {
+  .nhsuk-width-container {
+    padding: 0 12px;
+  }
+  
+  .nhsuk-main-wrapper {
+    padding: 16px 0;
+  }
+  
+  /* Stack grid columns on mobile */
+  .grid-cols-1 {
+    grid-template-columns: 1fr;
+  }
+  
+  .md\\:grid-cols-2 {
+    grid-template-columns: 1fr;
+  }
+  
+  .md\\:grid-cols-3 {
+    grid-template-columns: 1fr;
+  }
+  
+  .lg\\:grid-cols-3 {
+    grid-template-columns: 1fr;
+  }
+  
+  .lg\\:grid-cols-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .lg\\:col-span-2 {
+    grid-column: span 1;
+  }
+  
+  /* Reduce padding on mobile */
+  .p-6 {
+    padding: 1rem !important;
+  }
+  
+  .p-4 {
+    padding: 0.75rem !important;
+  }
+  
+  /* Adjust gaps */
+  .gap-6 {
+    gap: 1rem !important;
+  }
+  
+  .gap-8 {
+    gap: 1.5rem !important;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  /* Tablet adjustments */
+  .lg\\:grid-cols-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .lg\\:grid-cols-3 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1025px) {
+  /* Desktop - restore original grid layouts */
+  .nhsuk-width-container {
+    max-width: 1200px !important;
+    margin: 0 auto;
+    padding: 0 32px;
+  }
 }

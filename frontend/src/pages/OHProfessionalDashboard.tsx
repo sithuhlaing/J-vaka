@@ -1,7 +1,12 @@
 import React from 'react';
-import { Calendar, Users, FileText, Clock, Video, Phone, CheckCircle, AlertCircle } from 'lucide-react';
+import { Calendar, Users, FileText, Clock, Video, CheckCircle, AlertCircle } from 'lucide-react';
+import { AppScreen } from '../contexts/NavigationContext';
 
-const OHProfessionalDashboard = () => {
+interface OHProfessionalDashboardProps {
+    onNavigate: (screen: AppScreen, data?: any) => void;
+}
+
+const OHProfessionalDashboard: React.FC<OHProfessionalDashboardProps> = ({ onNavigate }) => {
     const todayAppointments = [
         {
             id: 1,
@@ -79,9 +84,10 @@ const OHProfessionalDashboard = () => {
     };
 
     return (
-        <div className="p-6">
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="responsive-container min-h-full">
+            <div className="p-6">
+                {/* Stats Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                     <div className="flex items-center justify-between mb-4">
                         <h3 className="text-blue-600 font-semibold text-sm">Today's Schedule</h3>
@@ -144,16 +150,16 @@ const OHProfessionalDashboard = () => {
                                                 {appointment.mrn} | {appointment.employeeId}
                                             </p>
                                         </div>
-                                        <div className="flex space-x-2">
+                                        <div className="appointment-actions">
                                             <button className="px-3 py-1 bg-gray-500 text-white rounded text-xs hover:bg-gray-600 transition-colors">
-                                                View Profile
+                                                Profile
                                             </button>
                                             {appointment.status === 'ready' && (
-                                                <button className="px-3 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700 transition-colors">
+                                                <button className="px-3 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700 transition-colors flex items-center justify-center">
                                                     {appointment.type === 'video' ? (
                                                         <>
-                                                            <Video className="inline h-3 w-3 mr-1" />
-                                                            Join Video
+                                                            <Video className="inline h-3 w-3 mr-1 flex-shrink-0" />
+                                                            <span>Join</span>
                                                         </>
                                                     ) : (
                                                         'Start'
@@ -218,6 +224,7 @@ const OHProfessionalDashboard = () => {
                         </div>
                     </div>
                 </div>
+            </div>
             </div>
         </div>
     );

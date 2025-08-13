@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Save, Printer, CheckCircle, AlertTriangle, Clock, User, FileText, Shield } from 'lucide-react';
+import { Save, Printer, CheckCircle, AlertTriangle, FileText, Shield } from 'lucide-react';
+import { AppScreen } from '../contexts/NavigationContext';
 
 interface AssessmentData {
     employeeId: string;
@@ -32,7 +33,11 @@ interface AssessmentData {
     notes: string;
 }
 
-const OccupationalAssessment = () => {
+interface OccupationalAssessmentProps {
+    onNavigate: (screen: AppScreen, data?: any) => void;
+}
+
+const OccupationalAssessment: React.FC<OccupationalAssessmentProps> = ({ onNavigate }) => {
     const [assessmentData, setAssessmentData] = useState<AssessmentData>({
         employeeId: 'EMP001',
         employeeName: 'John Smith',

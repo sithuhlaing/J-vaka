@@ -23,35 +23,48 @@ interface MainLayoutProps {
 
 export function MainLayout({ currentView, breadcrumbs, onNavigate, onLogout, children }: MainLayoutProps) {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="nhsuk-template">
       {/* Header */}
-      <header className="bg-blue-600 text-white sticky top-0 z-50">
-        <div className="px-6 py-4">
-          <div className="flex items-center justify-between">
-            {/* Left side - Logo and User Info */}
-            <div className="flex items-center space-x-4">
-              <div className="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
-                <span className="text-white font-semibold text-lg">OH</span>
+      <header className="nhsuk-header" role="banner">
+        <div className="nhsuk-width-container nhsuk-header__container">
+          <div className="nhsuk-header__logo">
+            <span className="nhsuk-header__service-name">
+              Occupational Health Portal
+            </span>
+          </div>
+          
+          <div className="nhsuk-header__content" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <div style={{ 
+                width: '2.5rem', 
+                height: '2.5rem', 
+                backgroundColor: 'rgba(255, 255, 255, 0.2)', 
+                borderRadius: '50%', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center' 
+              }}>
+                <span style={{ color: 'white', fontWeight: '600', fontSize: '1.125rem' }}>JS</span>
               </div>
               <div>
-                <h3 className="font-semibold text-white">John Smith</h3>
-                <p className="text-blue-100 text-sm">Employee ID: EMP001</p>
+                <h3 style={{ color: 'white', fontWeight: '600', margin: '0' }}>John Smith</h3>
+                <p style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '0.875rem', margin: '0' }}>Employee ID: EMP001</p>
               </div>
             </div>
 
-            {/* Right side - Navigation Actions */}
-            <div className="flex items-center space-x-3">
-              <button className="px-4 py-2 bg-white bg-opacity-20 rounded text-white hover:bg-opacity-30 transition-colors">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginLeft: 'auto' }}>
+              <button className="nhsuk-button nhsuk-button--reverse nhsuk-button--small">
                 Messages (3)
               </button>
-              <button className="px-4 py-2 bg-white bg-opacity-20 rounded text-white hover:bg-opacity-30 transition-colors">
+              <button className="nhsuk-button nhsuk-button--reverse nhsuk-button--small">
                 Notifications
               </button>
               <button 
                 onClick={onLogout}
-                className="px-4 py-2 bg-white bg-opacity-20 rounded text-white hover:bg-opacity-30 transition-colors flex items-center space-x-2"
+                className="nhsuk-button nhsuk-button--reverse nhsuk-button--small"
+                style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
               >
-                <LogOut className="h-4 w-4" />
+                <LogOut style={{ height: '1rem', width: '1rem' }} />
                 <span>Logout</span>
               </button>
             </div>
@@ -60,76 +73,120 @@ export function MainLayout({ currentView, breadcrumbs, onNavigate, onLogout, chi
       </header>
 
       {/* Sub Navigation */}
-      <nav className="bg-white border-b border-gray-200">
-        <div className="px-6">
-          <div className="flex items-center space-x-1">
-            <button
-              onClick={() => onNavigate("dashboard")}
-              className={`flex items-center space-x-2 px-4 py-3 border-b-2 font-medium text-sm transition-colors ${
-                currentView === "dashboard"
-                  ? "border-blue-600 text-blue-600"
-                  : "border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300"
-              }`}
-            >
-              <Home className="h-4 w-4" />
-              <span>Dashboard</span>
-            </button>
+      <nav className="nhsuk-header__navigation" role="navigation" aria-label="Primary navigation">
+        <div className="nhsuk-width-container">
+          <ul className="nhsuk-header__navigation-list">
+            <li className="nhsuk-header__navigation-item">
+              <button
+                onClick={() => onNavigate("dashboard")}
+                className={`nhsuk-header__navigation-link ${
+                  currentView === "dashboard" ? "nhsuk-header__navigation-link--active" : ""
+                }`}
+                style={{ 
+                  background: 'none', 
+                  border: 'none', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '0.5rem',
+                  width: '100%'
+                }}
+              >
+                <Home style={{ height: '1rem', width: '1rem' }} />
+                <span>Dashboard</span>
+              </button>
+            </li>
             
-            <button
-              onClick={() => onNavigate("appointments")}
-              className={`flex items-center space-x-2 px-4 py-3 border-b-2 font-medium text-sm transition-colors ${
-                currentView === "appointments"
-                  ? "border-blue-600 text-blue-600"
-                  : "border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300"
-              }`}
-            >
-              <Calendar className="h-4 w-4" />
-              <span>Appointments</span>
-            </button>
+            <li className="nhsuk-header__navigation-item">
+              <button
+                onClick={() => onNavigate("appointments")}
+                className={`nhsuk-header__navigation-link ${
+                  currentView === "appointments" ? "nhsuk-header__navigation-link--active" : ""
+                }`}
+                style={{ 
+                  background: 'none', 
+                  border: 'none', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '0.5rem',
+                  width: '100%'
+                }}
+              >
+                <Calendar style={{ height: '1rem', width: '1rem' }} />
+                <span>Appointments</span>
+              </button>
+            </li>
             
-            <button
-              onClick={() => onNavigate("documents")}
-              className={`flex items-center space-x-2 px-4 py-3 border-b-2 font-medium text-sm transition-colors ${
-                currentView === "documents"
-                  ? "border-blue-600 text-blue-600"
-                  : "border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300"
-              }`}
-            >
-              <FileText className="h-4 w-4" />
-              <span>Documents</span>
-            </button>
+            <li className="nhsuk-header__navigation-item">
+              <button
+                onClick={() => onNavigate("documents")}
+                className={`nhsuk-header__navigation-link ${
+                  currentView === "documents" ? "nhsuk-header__navigation-link--active" : ""
+                }`}
+                style={{ 
+                  background: 'none', 
+                  border: 'none', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '0.5rem',
+                  width: '100%'
+                }}
+              >
+                <FileText style={{ height: '1rem', width: '1rem' }} />
+                <span>Documents</span>
+              </button>
+            </li>
             
-            <button
-              onClick={() => onNavigate("messages")}
-              className={`flex items-center space-x-2 px-4 py-3 border-b-2 font-medium text-sm transition-colors ${
-                currentView === "messages"
-                  ? "border-blue-600 text-blue-600"
-                  : "border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300"
-              }`}
-            >
-              <MessageCircle className="h-4 w-4" />
-              <span>Messages</span>
-            </button>
+            <li className="nhsuk-header__navigation-item">
+              <button
+                onClick={() => onNavigate("messages")}
+                className={`nhsuk-header__navigation-link ${
+                  currentView === "messages" ? "nhsuk-header__navigation-link--active" : ""
+                }`}
+                style={{ 
+                  background: 'none', 
+                  border: 'none', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '0.5rem',
+                  width: '100%'
+                }}
+              >
+                <MessageCircle style={{ height: '1rem', width: '1rem' }} />
+                <span>Messages</span>
+              </button>
+            </li>
             
-            <button
-              onClick={() => onNavigate("video-call")}
-              className={`flex items-center space-x-2 px-4 py-3 border-b-2 font-medium text-sm transition-colors ${
-                currentView === "video-call"
-                  ? "border-blue-600 text-blue-600"
-                  : "border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300"
-              }`}
-            >
-              <Video className="h-4 w-4" />
-              <span>Video Call</span>
-            </button>
-          </div>
+            <li className="nhsuk-header__navigation-item">
+              <button
+                onClick={() => onNavigate("video-call")}
+                className={`nhsuk-header__navigation-link ${
+                  currentView === "video-call" ? "nhsuk-header__navigation-link--active" : ""
+                }`}
+                style={{ 
+                  background: 'none', 
+                  border: 'none', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '0.5rem',
+                  width: '100%'
+                }}
+              >
+                <Video style={{ height: '1rem', width: '1rem' }} />
+                <span>Video Call</span>
+              </button>
+            </li>
+          </ul>
         </div>
       </nav>
 
       {/* Main Content */}
-      <main className="flex-1">
-        {children}
-      </main>
+      <div className="nhsuk-width-container">
+        <main className="nhsuk-main-wrapper" id="maincontent" role="main">
+          <div className="w-full min-h-full">
+            {children}
+          </div>
+        </main>
+      </div>
     </div>
   );
 }

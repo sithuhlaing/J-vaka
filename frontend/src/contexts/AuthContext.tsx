@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
-export type UserRole = 'employee' | 'oh-professional' | 'manager';
+export type UserRole = 'employee' | 'oh_professional' | 'manager';
 
 export interface User {
     id: string;
@@ -61,12 +61,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                         employeeId: 'EMP001'
                     };
                     break;
-                case 'oh-professional':
+                case 'oh_professional':
                     userData = {
                         id: 'oh001',
                         name: 'Dr. Sarah Johnson',
                         email: email,
-                        role: 'oh-professional',
+                        role: 'oh_professional',
                         specialty: 'Occupational Health Physician',
                         department: 'Occupational Health'
                     };

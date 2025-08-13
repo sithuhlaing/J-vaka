@@ -1,7 +1,12 @@
 import React, { useState } from 'react';
 import { Mic, MicOff, Video as VideoIcon, VideoOff, Monitor, MessageCircle, Phone } from 'lucide-react';
+import { AppScreen } from '../contexts/NavigationContext';
 
-const VideoCall = () => {
+interface VideoCallProps {
+    onNavigate: (screen: AppScreen, data?: any) => void;
+}
+
+const VideoCall: React.FC<VideoCallProps> = ({ onNavigate }) => {
     const [isMuted, setIsMuted] = useState(false);
     const [isVideoOn, setIsVideoOn] = useState(true);
     const [showChat, setShowChat] = useState(false);

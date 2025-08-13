@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Search, Plus, FileText, AlertTriangle, CheckCircle, Clock, User, Briefcase, Calendar, Shield } from 'lucide-react';
+import { AppScreen } from '../contexts/NavigationContext';
 
 interface Employee {
     id: string;
@@ -15,7 +16,11 @@ interface Employee {
     medicalSurveillance: string[];
 }
 
-const EmployeeHealthRecords = () => {
+interface EmployeeHealthRecordsProps {
+    onNavigate: (screen: AppScreen, data?: any) => void;
+}
+
+const EmployeeHealthRecords: React.FC<EmployeeHealthRecordsProps> = ({ onNavigate }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
     

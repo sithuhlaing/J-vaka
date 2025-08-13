@@ -6,7 +6,6 @@ import {
   FileText,
   BarChart3,
   Settings,
-  Bell,
   LogOut,
 } from "lucide-react";
 
@@ -16,9 +15,9 @@ interface Breadcrumb {
 }
 
 interface OHMainLayoutProps {
-  currentView: "dashboard" | "patients" | "assessment" | "schedule" | "reports" | "settings";
+  currentView: "dashboard" | "patients" | "assessment" | "appointments" | "reports" | "settings";
   breadcrumbs: Breadcrumb[];
-  onNavigate: (view: "dashboard" | "patients" | "assessment" | "schedule" | "reports" | "settings") => void;
+  onNavigate: (view: "dashboard" | "patients" | "assessment" | "appointments" | "reports" | "settings") => void;
   onLogout: () => void;
   user: {
     name: string;
@@ -30,38 +29,48 @@ interface OHMainLayoutProps {
 
 export function OHMainLayout({ currentView, breadcrumbs, onNavigate, onLogout, user, children }: OHMainLayoutProps) {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="nhsuk-template">
       {/* Header */}
-      <header className="bg-blue-600 text-white sticky top-0 z-50">
-        <div className="px-6 py-4">
-          <div className="flex items-center justify-between">
-            {/* Left side - Logo and User Info */}
-            <div className="flex items-center space-x-4">
-              <div className="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
-                <span className="text-white font-semibold text-lg">👨‍⚕️</span>
+      <header className="nhsuk-header" role="banner">
+        <div className="nhsuk-width-container nhsuk-header__container">
+          <div className="nhsuk-header__logo">
+            <span className="nhsuk-header__service-name">
+              OH Professional Portal
+            </span>
+          </div>
+          
+          <div className="nhsuk-header__content" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <div style={{ 
+                width: '2.5rem', 
+                height: '2.5rem', 
+                backgroundColor: 'rgba(255, 255, 255, 0.2)', 
+                borderRadius: '50%', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center' 
+              }}>
+                <span style={{ color: 'white', fontWeight: '600', fontSize: '1.125rem' }}>👨‍⚕️</span>
               </div>
               <div>
-                <h3 className="font-semibold text-white">{user.name}</h3>
-                <p className="text-blue-100 text-sm">{user.specialty || user.role}</p>
+                <h3 style={{ color: 'white', fontWeight: '600', margin: '0' }}>{user.name}</h3>
+                <p style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '0.875rem', margin: '0' }}>{user.specialty || user.role}</p>
               </div>
             </div>
 
-            {/* Right side - Navigation Actions */}
-            <div className="flex items-center space-x-3">
-              <button className="px-4 py-2 bg-white bg-opacity-20 rounded text-white hover:bg-opacity-30 transition-colors">
-                Calendar
-              </button>
-              <button className="px-4 py-2 bg-white bg-opacity-20 rounded text-white hover:bg-opacity-30 transition-colors">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginLeft: 'auto' }}>
+              <button className="nhsuk-button nhsuk-button--reverse nhsuk-button--small">
                 Patients (24)
               </button>
-              <button className="px-4 py-2 bg-white bg-opacity-20 rounded text-white hover:bg-opacity-30 transition-colors">
+              <button className="nhsuk-button nhsuk-button--reverse nhsuk-button--small">
                 Messages (7)
               </button>
               <button 
                 onClick={onLogout}
-                className="px-4 py-2 bg-white bg-opacity-20 rounded text-white hover:bg-opacity-30 transition-colors flex items-center space-x-2"
+                className="nhsuk-button nhsuk-button--reverse nhsuk-button--small"
+                style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
               >
-                <LogOut className="h-4 w-4" />
+                <LogOut style={{ height: '1rem', width: '1rem' }} />
                 <span>Logout</span>
               </button>
             </div>
@@ -70,88 +79,140 @@ export function OHMainLayout({ currentView, breadcrumbs, onNavigate, onLogout, u
       </header>
 
       {/* Sub Navigation */}
-      <nav className="bg-white border-b border-gray-200">
-        <div className="px-6">
-          <div className="flex items-center space-x-1">
-            <button
-              onClick={() => onNavigate("dashboard")}
-              className={`flex items-center space-x-2 px-4 py-3 border-b-2 font-medium text-sm transition-colors ${
-                currentView === "dashboard"
-                  ? "border-blue-600 text-blue-600"
-                  : "border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300"
-              }`}
-            >
-              <Home className="h-4 w-4" />
-              <span>Dashboard</span>
-            </button>
+      <nav className="nhsuk-header__navigation" role="navigation" aria-label="Primary navigation">
+        <div className="nhsuk-width-container">
+          <ul className="nhsuk-header__navigation-list">
+            <li className="nhsuk-header__navigation-item">
+              <button
+                onClick={() => onNavigate("dashboard")}
+                className={`nhsuk-header__navigation-link ${
+                  currentView === "dashboard" ? "nhsuk-header__navigation-link--active" : ""
+                }`}
+                style={{ 
+                  background: 'none', 
+                  border: 'none', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '0.5rem',
+                  width: '100%'
+                }}
+              >
+                <Home style={{ height: '1rem', width: '1rem' }} />
+                <span>Dashboard</span>
+              </button>
+            </li>
             
-            <button
-              onClick={() => onNavigate("patients")}
-              className={`flex items-center space-x-2 px-4 py-3 border-b-2 font-medium text-sm transition-colors ${
-                currentView === "patients"
-                  ? "border-blue-600 text-blue-600"
-                  : "border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300"
-              }`}
-            >
-              <Users className="h-4 w-4" />
-              <span>Employee Records</span>
-            </button>
+            <li className="nhsuk-header__navigation-item">
+              <button
+                onClick={() => onNavigate("patients")}
+                className={`nhsuk-header__navigation-link ${
+                  currentView === "patients" ? "nhsuk-header__navigation-link--active" : ""
+                }`}
+                style={{ 
+                  background: 'none', 
+                  border: 'none', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '0.5rem',
+                  width: '100%'
+                }}
+              >
+                <Users style={{ height: '1rem', width: '1rem' }} />
+                <span>Employee Records</span>
+              </button>
+            </li>
             
-            <button
-              onClick={() => onNavigate("assessment")}
-              className={`flex items-center space-x-2 px-4 py-3 border-b-2 font-medium text-sm transition-colors ${
-                currentView === "assessment"
-                  ? "border-blue-600 text-blue-600"
-                  : "border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300"
-              }`}
-            >
-              <FileText className="h-4 w-4" />
-              <span>Assessment</span>
-            </button>
+            <li className="nhsuk-header__navigation-item">
+              <button
+                onClick={() => onNavigate("assessment")}
+                className={`nhsuk-header__navigation-link ${
+                  currentView === "assessment" ? "nhsuk-header__navigation-link--active" : ""
+                }`}
+                style={{ 
+                  background: 'none', 
+                  border: 'none', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '0.5rem',
+                  width: '100%'
+                }}
+              >
+                <FileText style={{ height: '1rem', width: '1rem' }} />
+                <span>Assessment</span>
+              </button>
+            </li>
             
-            <button
-              onClick={() => onNavigate("schedule")}
-              className={`flex items-center space-x-2 px-4 py-3 border-b-2 font-medium text-sm transition-colors ${
-                currentView === "schedule"
-                  ? "border-blue-600 text-blue-600"
-                  : "border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300"
-              }`}
-            >
-              <Calendar className="h-4 w-4" />
-              <span>Schedule</span>
-            </button>
+            <li className="nhsuk-header__navigation-item">
+              <button
+                onClick={() => onNavigate("appointments")}
+                className={`nhsuk-header__navigation-link ${
+                  currentView === "appointments" ? "nhsuk-header__navigation-link--active" : ""
+                }`}
+                style={{ 
+                  background: 'none', 
+                  border: 'none', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '0.5rem',
+                  width: '100%'
+                }}
+              >
+                <Calendar style={{ height: '1rem', width: '1rem' }} />
+                <span>Appointments</span>
+              </button>
+            </li>
             
-            <button
-              onClick={() => onNavigate("reports")}
-              className={`flex items-center space-x-2 px-4 py-3 border-b-2 font-medium text-sm transition-colors ${
-                currentView === "reports"
-                  ? "border-blue-600 text-blue-600"
-                  : "border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300"
-              }`}
-            >
-              <BarChart3 className="h-4 w-4" />
-              <span>Reports</span>
-            </button>
+            <li className="nhsuk-header__navigation-item">
+              <button
+                onClick={() => onNavigate("reports")}
+                className={`nhsuk-header__navigation-link ${
+                  currentView === "reports" ? "nhsuk-header__navigation-link--active" : ""
+                }`}
+                style={{ 
+                  background: 'none', 
+                  border: 'none', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '0.5rem',
+                  width: '100%'
+                }}
+              >
+                <BarChart3 style={{ height: '1rem', width: '1rem' }} />
+                <span>Reports</span>
+              </button>
+            </li>
             
-            <button
-              onClick={() => onNavigate("settings")}
-              className={`flex items-center space-x-2 px-4 py-3 border-b-2 font-medium text-sm transition-colors ${
-                currentView === "settings"
-                  ? "border-blue-600 text-blue-600"
-                  : "border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300"
-              }`}
-            >
-              <Settings className="h-4 w-4" />
-              <span>Settings</span>
-            </button>
-          </div>
+            <li className="nhsuk-header__navigation-item">
+              <button
+                onClick={() => onNavigate("settings")}
+                className={`nhsuk-header__navigation-link ${
+                  currentView === "settings" ? "nhsuk-header__navigation-link--active" : ""
+                }`}
+                style={{ 
+                  background: 'none', 
+                  border: 'none', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '0.5rem',
+                  width: '100%'
+                }}
+              >
+                <Settings style={{ height: '1rem', width: '1rem' }} />
+                <span>Settings</span>
+              </button>
+            </li>
+          </ul>
         </div>
       </nav>
 
       {/* Main Content */}
-      <main className="flex-1">
-        {children}
-      </main>
+      <div className="nhsuk-width-container">
+        <main className="nhsuk-main-wrapper" id="maincontent" role="main">
+          <div className="w-full min-h-full">
+            {children}
+          </div>
+        </main>
+      </div>
     </div>
   );
 }

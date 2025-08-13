@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>eHR Calendar MVP Simulation</title>
+    
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f4f7f9; color: #333; margin: 0; padding: 20px; }
+        #app-container { display: flex; gap: 20px; }
+        #sidebar { width: 220px; padding: 15px; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); height: fit-content; }
+        #sidebar h3 { margin-top: 0; font-size: 16px; border-bottom: 1px solid #eee; padding-bottom: 10px; color: #555; }
+        #calendar { flex-grow: 1; background-color: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.07); }
+        .calendar-toggle { margin-bottom: 10px; }
+        .calendar-toggle label { display: flex; align-items: center; cursor: pointer; }
+        .calendar-toggle input { margin-right: 8px; }
+        .color-box { width: 15px; height: 15px; margin-right: 8px; border-radius: 3px; border: 1px solid rgba(0,0,0,0.1); }
+        .modal-backdrop { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3); width: 90%; max-width: 500px; z-index: 1001; }
+        .modal-content h3 { margin-top: 0; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: 600; }
+        input[type="text"], textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        .modal-actions { margin-top: 20px; display: flex; justify-content: space-between; }
+        button { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; }
+        .btn-save { background-color: #007bff; color: white; }
+        .btn-delete { background-color: #dc3545; color: white; }
+        .btn-cancel { background-color: #6c757d; color: white; }
+        .snomed-search-container { position: relative; }
+        .snomed-results { position: absolute; width: 100%; background: white; border: 1px solid #ccc; list-style-type: none; padding: 0; margin: 0; max-height: 150px; overflow-y: auto; z-index: 1002; }
+        .snomed-results li { padding: 10px; cursor: pointer; }
+        .snomed-results li:hover { background-color: #f0f0f0; }
+        .selected-snomed { background-color: #e7f3ff; border: 1px solid #b3d7ff; padding: 8px; border-radius: 4px; font-size: 13px; margin-top: 5px; display: none; }
+        :root { --fc-border-color: #e0e0e0; --fc-button-bg-color: #007bff; --fc-today-bg-color: rgba(0, 123, 255, 0.07); }
+    </style>
+</head>
+<body>
+
+    <h1>eHR Calendar MVP Simulation</h1>
+
+    <div id="app-container">
+        <div id="sidebar">
+            <h3>My Calendars</h3>
+            <div id="calendar-toggles"></div>
+        </div>
+        <div id="calendar"></div>
+    </div>
+    
+    <div id="event-modal" class="modal-backdrop">
+        <div class="modal-content">
+            <h3 id="modal-title">Event</h3>
+            <form id="event-form" onsubmit="event.preventDefault(); saveEvent();">
+                <input type="hidden" id="event-id">
+                <div class="form-group"><label for="event-title">Event Title</label><input type="text" id="event-title" required></div>
+                <div class="form-group"><label for="snomed-search">Diagnosis/Procedure (SNOMED CT)</label><div class="snomed-search-container"><input type="text" id="snomed-search" placeholder="Search clinical terms..."><ul id="snomed-results"></ul></div><div id="selected-snomed"></div></div>
+                <div class="form-group"><label for="event-description">Description</label><textarea id="event-description" rows="3"></textarea></div>
+                <div class="modal-actions">
+                    <button type="button" id="delete-button" class="btn-delete" onclick="deleteEvent()">Delete</button>
+                    <div><button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button><button type="submit" class="btn-save">Save</button></div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- This script tag defines our application logic but DOES NOT run it yet -->
+    <script>
+        function initializeCalendarApp() {
+            // --- DATA STORE (CORRECTED & CENTRALIZED) ---
+            const data = {
+                calendars: {
+                    '1': { name: 'Patient Appointments', color: '#28a745' },
+                    '2': { name: 'Staff Meetings', color: '#ffc107' }
+                },
+                events: [
+                    { id: 'evt1', calendarId: '1', title: 'Annual Checkup - John Doe', start: new Date().toISOString().slice(0, 10) + 'T10:00:00', end: new Date().toISOString().slice(0, 10) + 'T10:45:00', extendedProps: { description: 'Routine exam.', snomed: { code: '185349003', display: 'Annual physical examination' }}},
+                    { id: 'evt2', calendarId: '1', title: 'Diabetes Follow-up - Jane Smith', start: new Date(Date.now() + 2 * 864e5).toISOString().slice(0, 10) + 'T14:00:00', end: new Date(Date.now() + 2 * 864e5).toISOString().slice(0, 10) + 'T14:30:00', extendedProps: { description: 'Check blood sugar levels.', snomed: { code: '44054006', display: 'Type 2 diabetes mellitus' }}},
+                    { id: 'evt3', calendarId: '2', title: 'Weekly Team Sync', start: new Date(Date.now() - 1 * 864e5).toISOString().slice(0, 10) + 'T09:00:00', end: new Date(Date.now() - 1 * 864e5).toISOString().slice(0, 10) + 'T10:00:00', extendedProps: { description: 'Weekly progress discussion.', snomed: null } }
+                ],
+                snomedDb: [
+                    { code: '386661006', display: 'Fever' }, 
+                    { code: '44054006', display: 'Type 2 diabetes mellitus' }, 
+                    { code: '185349003', display: 'Annual physical examination' }, 
+                    { code: '6571000', display: 'Headache' }
+                ]
+            };
+
+            let visibleCalendars = new Set(Object.keys(data.calendars));
+            window.currentSelection = null;
+            window.selectedSnomed = null;
+
+            const calendarEl = document.getElementById('calendar');
+            const modal = document.getElementById('event-modal');
+
+            const calendarApi = new FullCalendar.Calendar(calendarEl, {
+                plugins: [FullCalendar.dayGridPlugin, FullCalendar.timeGridPlugin, FullCalendar.interactionPlugin, FullCalendar.listPlugin],
+                headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek' },
+                initialView: 'dayGridMonth',
+                editable: true,
+                selectable: true,
+                events: function(fetchInfo, successCallback) {
+                    const eventsToDisplay = data.events
+                        .filter(event => visibleCalendars.has(event.calendarId))
+                        .map(event => ({ ...event, backgroundColor: data.calendars[event.calendarId].color, borderColor: data.calendars[event.calendarId].color }));
+                    successCallback(eventsToDisplay);
+                },
+                select: (selectionInfo) => { window.currentSelection = selectionInfo; openModal(); },
+                eventClick: (clickInfo) => { window.currentSelection = clickInfo; openModal(clickInfo.event); },
+                eventDrop: ({ event }) => {
+                    const idx = data.events.findIndex(e => e.id === event.id);
+                    if (idx !== -1) {
+                        data.events[idx].start = event.startStr;
+                        data.events[idx].end = event.endStr || event.startStr;
+                    }
+                }
+            });
+            calendarApi.render();
+
+            window.openModal = (event = null) => {
+                document.getElementById('event-form').reset();
+                document.getElementById('snomed-results').innerHTML = '';
+                if (event) {
+                    document.getElementById('modal-title').innerText = 'Edit Event';
+                    document.getElementById('event-id').value = event.id;
+                    document.getElementById('event-title').value = event.title;
+                    document.getElementById('event-description').value = event.extendedProps.description || '';
+                    window.selectedSnomed = event.extendedProps.snomed;
+                    document.getElementById('delete-button').style.display = 'inline-block';
+                } else {
+                    document.getElementById('modal-title').innerText = 'Create Event';
+                    document.getElementById('event-id').value = '';
+                    window.selectedSnomed = null;
+                    document.getElementById('delete-button').style.display = 'none';
+                }
+                updateSelectedSnomedDisplay();
+                modal.style.display = 'flex';
+            };
+            window.closeModal = () => { modal.style.display = 'none'; };
+            window.saveEvent = () => {
+                const id = document.getElementById('event-id').value;
+                const newEventData = {
+                    title: document.getElementById('event-title').value,
+                    start: window.currentSelection.startStr,
+                    end: window.currentSelection.endStr,
+                    extendedProps: { description: document.getElementById('event-description').value, snomed: window.selectedSnomed }
+                };
+                if (id) {
+                    const idx = data.events.findIndex(e => e.id === id);
+                    if (idx !== -1) Object.assign(data.events[idx], newEventData);
+                } else {
+                    data.events.push({ ...newEventData, id: 'evt' + Date.now(), calendarId: [...visibleCalendars][0] || '1' });
+                }
+                calendarApi.refetchEvents();
+                closeModal();
+            };
+            window.deleteEvent = () => {
+                const id = document.getElementById('event-id').value;
+                if (id && confirm('Are you sure?')) {
+                    data.events = data.events.filter(e => e.id !== id);
+                    calendarApi.refetchEvents();
+                    closeModal();
+                }
+            };
+            const updateSelectedSnomedDisplay = () => {
+                const el = document.getElementById('selected-snomed');
+                if (window.selectedSnomed) {
+                    el.innerHTML = `<strong>Selected:</strong> ${window.selectedSnomed.display} <code>[${window.selectedSnomed.code}]</code>`;
+                    el.style.display = 'block';
+                } else {
+                    el.style.display = 'none';
+                }
+            };
+
+            document.getElementById('snomed-search').addEventListener('input', (e) => {
+                const term = e.target.value.toLowerCase();
+                const resultsEl = document.getElementById('snomed-results');
+                resultsEl.innerHTML = '';
+                if (term.length < 2) return;
+                data.snomedDb.filter(item => item.display.toLowerCase().includes(term)).forEach(result => {
+                    const li = document.createElement('li');
+                    li.textContent = result.display;
+                    li.onclick = () => {
+                        window.selectedSnomed = result;
+                        if (!document.getElementById('event-title').value) document.getElementById('event-title').value = result.display;
+                        e.target.value = '';
+                        resultsEl.innerHTML = '';
+                        updateSelectedSnomedDisplay();
+                    };
+                    resultsEl.appendChild(li);
+                });
+            });
+
+            const toggleContainer = document.getElementById('calendar-toggles');
+            Object.entries(data.calendars).forEach(([id, { name, color }]) => {
+                const div = document.createElement('div');
+                div.className = 'calendar-toggle';
+                div.innerHTML = `<label><input type="checkbox" data-id="${id}" checked><span class="color-box" style="background-color: ${color};"></span>${name}</label>`;
+                div.querySelector('input').addEventListener('change', (e) => {
+                    if (e.target.checked) visibleCalendars.add(id);
+                    else visibleCalendars.delete(id);
+                    calendarApi.refetchEvents();
+                });
+                toggleContainer.appendChild(div);
+            });
+        }
+    </script>
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js' onload="initializeCalendarApp()"></script>
+</body>
+</html>
