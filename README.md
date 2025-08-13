@@ -1,90 +1,108 @@
-# EHR Unified Application
+# J-Vaka Dockerized Application
 
-A comprehensive Electronic Health Record (EHR) system built with React and Tailwind CSS.
+This document describes how to run the J-Vaka application using Docker containers.
 
-## Features
+## Prerequisites
 
-- **Dashboard**: Overview of today's schedule and priority items
-- **Schedule Management**: Weekly calendar view with appointment scheduling
-- **Patient Charts**: Comprehensive patient information including:
-  - Patient Summary
-  - Encounter Notes (SOAP format)
-  - Medication Management
-  - Lab Results
-- **Inbox**: Task and message management system
-- **Reports**: Various clinical and administrative reports
+- Docker
+- Docker Compose
 
-## Getting Started
+## Architecture
 
-### Prerequisites
+- **Backend**: Spring Boot application with JWT authentication (Port 8080)
+- **Frontend**: React application with TypeScript (Port 3000)
 
-- Node.js (version 14 or higher)
-- npm or yarn
+## Quick Start
 
-### Installation
-
-1. Clone the repository:
+1. **Build and start all services:**
    ```bash
-   git clone <repository-url>
-   cd j-vaka-ehr
+   docker-compose up --build
    ```
 
-2. Install dependencies:
+2. **Start services in detached mode:**
    ```bash
-   npm install
+   docker-compose up -d --build
    ```
 
-3. Start the development server:
+3. **Stop all services:**
    ```bash
-   npm start
+   docker-compose down
    ```
 
-4. Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+## Individual Service Commands
 
-## Available Scripts
-
-- `npm start` - Runs the app in development mode
-- `npm build` - Builds the app for production
-- `npm test` - Launches the test runner
-- `npm eject` - Ejects from Create React App (one-way operation)
-
-## Project Structure
-
-```
-src/
-├── components/          # Reusable UI components
-│   ├── InfoCard.jsx
-│   ├── Navigation.jsx
-│   └── PatientHeader.jsx
-├── pages/              # Main application views
-│   ├── DashboardView.jsx
-│   ├── EncounterNoteView.jsx
-│   ├── InboxView.jsx
-│   ├── LabsView.jsx
-│   ├── MedicationsView.jsx
-│   ├── PatientSummaryView.jsx
-│   ├── ReportsView.jsx
-│   └── ScheduleView.jsx
-├── App.jsx             # Main application component
-├── index.js            # Application entry point
-└── index.css           # Global styles with Tailwind CSS
+### Backend Only
+```bash
+cd backend
+docker build -t j-vaka-backend .
+docker run -p 8080:8080 j-vaka-backend
 ```
 
-## Technologies Used
+### Frontend Only
+```bash
+cd frontend
+docker build -t j-vaka-frontend .
+docker run -p 3000:80 j-vaka-frontend
+```
 
-- **React 18** - Frontend framework
-- **Tailwind CSS** - Utility-first CSS framework
-- **Font Awesome** - Icons
-- **Create React App** - Build tooling
+## Service URLs
 
-## Contributing
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:8080/api
+- **H2 Database Console**: http://localhost:8080/h2-console
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+## API Endpoints
 
-## License
+### Authentication
+- `POST /api/auth/signin` - User login
+- `POST /api/auth/signup` - User registration
 
-This project is licensed under the MIT License.
+### Test Endpoints
+- `GET /api/test/all` - Public access
+- `GET /api/test/user` - User role required
+- `GET /api/test/mod` - Moderator role required
+- `GET /api/test/admin` - Admin role required
+
+## Environment Variables
+
+Backend environment variables can be modified in `docker-compose.yml`:
+
+- `APP_JWT_SECRET`: JWT secret key
+- `APP_JWT_EXPIRATION_MS`: JWT expiration time in milliseconds
+- `SPRING_DATASOURCE_*`: Database configuration
+
+## Development
+
+### Logs
+```bash
+# View logs for all services
+docker-compose logs
+
+# View logs for specific service
+docker-compose logs backend
+docker-compose logs frontend
+```
+
+### Rebuild Services
+```bash
+# Rebuild specific service
+docker-compose build backend
+docker-compose build frontend
+
+# Rebuild and restart
+docker-compose up --build
+```
+
+## Troubleshooting
+
+1. **Port conflicts**: Make sure ports 3000 and 8080 are not in use
+2. **Container startup issues**: Check logs with `docker-compose logs [service-name]`
+3. **Network issues**: Ensure containers are on the same network (j-vaka-network)
+
+## Production Considerations
+
+- Change default JWT secret
+- Use external database instead of H2
+- Configure proper CORS origins
+- Add SSL/TLS certificates
+- Set up proper logging and monitoring

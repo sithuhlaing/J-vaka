@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    container_name: j-vaka-backend
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:h2:mem:testdb
+      - SPRING_DATASOURCE_USERNAME=sa
+      - SPRING_DATASOURCE_PASSWORD=password
+      - APP_JWT_SECRET=mySecretKey
+      - APP_JWT_EXPIRATION_MS=86400000
+    networks:
+      - j-vaka-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/test/all"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  frontend:
+    build: ./frontend
+    container_name: j-vaka-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - j-vaka-network
+
+networks:
+  j-vaka-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
