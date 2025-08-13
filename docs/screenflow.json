@@ -1,0 +1,1055 @@
+{
+  "application": {
+    "name": "OH eHR - Occupational Health System",
+    "version": "1.0.0",
+    "description": "NHS-compliant Occupational Health Electronic Health Records system",
+    "architecture": "microservices",
+    "services": ["auth", "employee", "appointment", "document", "telemedicine", "messaging", "notification"],
+    "ui_framework": "NHS UK Design System + React + TypeScript"
+  },
+  "user_roles": {
+    "employee": {
+      "permissions": ["view_own_data", "book_appointments", "upload_documents", "video_calls", "messaging"],
+      "default_route": "/employee/dashboard"
+    },
+    "oh_professional": {
+      "permissions": ["view_patient_data", "manage_appointments", "access_documents", "conduct_assessments", "video_calls", "messaging"],
+      "default_route": "/oh/dashboard"
+    },
+    "manager": {
+      "permissions": ["view_team_metrics", "generate_reports", "view_compliance"],
+      "default_route": "/manager/dashboard"
+    },
+    "admin": {
+      "permissions": ["system_management", "user_management", "audit_access"],
+      "default_route": "/admin/dashboard"
+    }
+  },
+  "screens": {
+    "auth_screens": {
+      "login": {
+        "id": "login",
+        "route": "/login",
+        "service": "auth",
+        "access": "public",
+        "layout": "auth",
+        "components": {
+          "header": {
+            "logo": { "type": "image", "src": "nhs-logo.svg", "size": "120x40" },
+            "title": { "type": "text", "value": "OH eHR System", "style": "h1" }
+          },
+          "form": {
+            "email": { "type": "input", "placeholder": "NHS Email", "validation": "email", "required": true },
+            "password": { "type": "input", "inputType": "password", "placeholder": "Password", "required": true },
+            "role": { "type": "select", "options": ["employee", "oh_professional", "manager", "admin"], "required": true },
+            "remember": { "type": "checkbox", "label": "Remember me" },
+            "submit": { "type": "button", "label": "Sign In", "action": "authenticate", "style": "primary" }
+          },
+          "links": {
+            "forgot_password": { "type": "link", "label": "Forgot password?", "route": "/forgot-password" },
+            "help": { "type": "link", "label": "Need help?", "route": "/help" }
+          }
+        },
+        "actions": {
+          "authenticate": {
+            "service": "auth",
+            "endpoint": "/auth/login",
+            "success_redirect": "role_based_dashboard",
+            "error_handling": "show_error_message"
+          }
+        },
+        "responsive": {
+          "mobile": { "layout": "single_column", "form_width": "100%" },
+          "desktop": { "layout": "centered", "form_width": "400px" }
+        }
+      }
+    },
+    "employee_screens": {
+      "dashboard": {
+        "id": "employee_dashboard",
+        "route": "/employee/dashboard",
+        "service": "employee",
+        "access": "employee",
+        "layout": "main",
+        "components": {
+          "header": {
+            "welcome": { "type": "text", "value": "Welcome, {{employee.first_name}}", "style": "h2" },
+            "date": { "type": "text", "value": "{{current_date}}", "style": "subtitle" },
+            "notifications": { "type": "icon", "icon": "bell", "action": "show_notifications", "badge": "{{unread_count}}" }
+          },
+          "health_status": {
+            "type": "card",
+            "title": "Health Status",
+            "status_indicator": { "type": "circle", "color": "{{health_status_color}}", "size": "large" },
+            "status_text": { "type": "text", "value": "{{health_status}}", "style": "status" },
+            "last_checkup": { "type": "text", "value": "Last checkup: {{last_checkup_date}}", "style": "small" }
+          },
+          "upcoming_appointments": {
+            "type": "card",
+            "title": "Upcoming Appointments",
+            "appointment_list": {
+              "type": "list",
+              "data_source": "appointment_service.upcoming",
+              "item_template": {
+                "date": { "type": "text", "value": "{{appointment.date}}" },
+                "time": { "type": "text", "value": "{{appointment.time}}" },
+                "type": { "type": "badge", "value": "{{appointment.type}}" },
+                "actions": {
+                  "join": { "type": "button", "label": "Join", "condition": "appointment.mode == 'virtual'", "action": "join_video_call" },
+                  "reschedule": { "type": "button", "label": "Reschedule", "action": "reschedule_appointment" }
+                }
+              }
+            },
+            "book_new": { "type": "button", "label": "Book New Appointment", "action": "navigate_to_booking", "style": "secondary" }
+          },
+          "quick_actions": {
+            "type": "grid",
+            "columns": { "mobile": 1, "desktop": 3 },
+            "actions": [
+              { "type": "button", "label": "Book Appointment", "icon": "calendar", "action": "navigate_appointments" },
+              { "type": "button", "label": "View Documents", "icon": "file", "action": "navigate_documents" },
+              { "type": "button", "label": "Messages", "icon": "message", "action": "navigate_messages", "badge": "{{unread_messages}}" }
+            ]
+          },
+          "recent_activity": {
+            "type": "card",
+            "title": "Recent Activity",
+            "activity_feed": {
+              "type": "timeline",
+              "data_source": "employee_service.recent_activity",
+              "item_template": {
+                "icon": { "type": "icon", "icon": "{{activity.icon}}" },
+                "description": { "type": "text", "value": "{{activity.description}}" },
+                "timestamp": { "type": "text", "value": "{{activity.timestamp}}", "style": "timestamp" }
+              }
+            }
+          }
+        },
+        "data_sources": {
+          "health_status": { "service": "employee", "endpoint": "/employee/health-status" },
+          "upcoming_appointments": { "service": "appointment", "endpoint": "/appointments/upcoming" },
+          "recent_activity": { "service": "employee", "endpoint": "/employee/activity" },
+          "unread_messages": { "service": "messaging", "endpoint": "/messages/unread-count" }
+        }
+      },
+      "appointments": {
+        "id": "employee_appointments",
+        "route": "/employee/appointments",
+        "service": "appointment",
+        "access": "employee",
+        "layout": "main",
+        "components": {
+          "header": {
+            "title": { "type": "text", "value": "Book Appointment", "style": "h2" },
+            "breadcrumb": { "type": "breadcrumb", "path": ["Dashboard", "Appointments"] }
+          },
+          "appointment_wizard": {
+            "type": "wizard",
+            "steps": [
+              {
+                "id": "type_selection",
+                "title": "Appointment Type",
+                "components": {
+                  "type_options": {
+                    "type": "radio_group",
+                    "options": [
+                      { "value": "health_check", "label": "Health Check-up", "description": "Regular health assessment" },
+                      { "value": "consultation", "label": "Consultation", "description": "Discuss specific health concern" },
+                      { "value": "follow_up", "label": "Follow-up", "description": "Follow-up from previous appointment" },
+                      { "value": "emergency", "label": "Urgent Consultation", "description": "Urgent health matter" }
+                    ],
+                    "required": true
+                  }
+                }
+              },
+              {
+                "id": "date_time_selection",
+                "title": "Date & Time",
+                "components": {
+                  "calendar": {
+                    "type": "calendar",
+                    "data_source": "appointment_service.availability",
+                    "selectable_dates": "{{available_dates}}",
+                    "min_date": "{{today}}",
+                    "max_date": "{{today + 3_months}}"
+                  },
+                  "time_slots": {
+                    "type": "grid",
+                    "data_source": "appointment_service.time_slots",
+                    "item_template": {
+                      "time": { "type": "button", "label": "{{slot.time}}", "action": "select_time_slot", "disabled": "{{!slot.available}}" }
+                    }
+                  }
+                }
+              },
+              {
+                "id": "mode_selection",
+                "title": "Appointment Mode",
+                "components": {
+                  "mode_options": {
+                    "type": "radio_group",
+                    "options": [
+                      { "value": "in_person", "label": "In-Person", "description": "Visit the health center", "icon": "building" },
+                      { "value": "video", "label": "Video Call", "description": "Online video consultation", "icon": "video" },
+                      { "value": "phone", "label": "Phone Call", "description": "Audio consultation", "icon": "phone" }
+                    ],
+                    "required": true
+                  },
+                  "location_info": {
+                    "type": "text",
+                    "value": "{{health_center_address}}",
+                    "condition": "mode == 'in_person'"
+                  }
+                }
+              },
+              {
+                "id": "confirmation",
+                "title": "Confirmation",
+                "components": {
+                  "summary": {
+                    "type": "summary_card",
+                    "fields": [
+                      { "label": "Type", "value": "{{selected_type}}" },
+                      { "label": "Date", "value": "{{selected_date}}" },
+                      { "label": "Time", "value": "{{selected_time}}" },
+                      { "label": "Mode", "value": "{{selected_mode}}" },
+                      { "label": "Professional", "value": "{{assigned_professional}}" }
+                    ]
+                  },
+                  "reason": {
+                    "type": "textarea",
+                    "label": "Reason for appointment (optional)",
+                    "placeholder": "Please describe your concern or reason for this appointment"
+                  },
+                  "preferences": {
+                    "type": "checkbox_group",
+                    "options": [
+                      { "value": "reminder_email", "label": "Send email reminder", "checked": true },
+                      { "value": "reminder_sms", "label": "Send SMS reminder" }
+                    ]
+                  }
+                }
+              }
+            ],
+            "navigation": {
+              "back": { "type": "button", "label": "Back", "style": "secondary" },
+              "next": { "type": "button", "label": "Next", "style": "primary" },
+              "submit": { "type": "button", "label": "Book Appointment", "style": "primary", "action": "create_appointment" }
+            }
+          }
+        },
+        "actions": {
+          "create_appointment": {
+            "service": "appointment",
+            "endpoint": "/appointments",
+            "method": "POST",
+            "success_redirect": "/employee/dashboard",
+            "success_message": "Appointment booked successfully"
+          }
+        }
+      },
+      "documents": {
+        "id": "employee_documents",
+        "route": "/employee/documents",
+        "service": "document",
+        "access": "employee",
+        "layout": "main",
+        "components": {
+          "header": {
+            "title": { "type": "text", "value": "My Documents", "style": "h2" },
+            "upload_button": { "type": "button", "label": "Upload Document", "action": "open_upload_modal", "style": "primary" }
+          },
+          "filters": {
+            "type": "filter_bar",
+            "filters": [
+              { "type": "select", "label": "Category", "options": ["all", "health_certificates", "test_results", "reports", "forms"] },
+              { "type": "select", "label": "Date Range", "options": ["all_time", "last_month", "last_year"] },
+              { "type": "input", "placeholder": "Search documents..." }
+            ]
+          },
+          "documents_grid": {
+            "type": "grid",
+            "columns": { "mobile": 1, "desktop": 3 },
+            "data_source": "document_service.user_documents",
+            "item_template": {
+              "thumbnail": { "type": "file_thumbnail", "file": "{{document.file_type}}" },
+              "name": { "type": "text", "value": "{{document.name}}", "style": "document_title" },
+              "type": { "type": "badge", "value": "{{document.type}}" },
+              "date": { "type": "text", "value": "{{document.upload_date}}", "style": "timestamp" },
+              "size": { "type": "text", "value": "{{document.size}}", "style": "file_size" },
+              "actions": {
+                "view": { "type": "button", "label": "View", "action": "view_document" },
+                "download": { "type": "button", "label": "Download", "action": "download_document" },
+                "share": { "type": "button", "label": "Share", "action": "share_document" }
+              }
+            }
+          },
+          "upload_modal": {
+            "type": "modal",
+            "title": "Upload Document",
+            "components": {
+              "file_upload": {
+                "type": "file_upload",
+                "accept": ".pdf,.jpg,.jpeg,.png,.doc,.docx",
+                "max_size": "50MB",
+                "multiple": false
+              },
+              "document_details": {
+                "name": { "type": "input", "label": "Document Name", "required": true },
+                "type": { "type": "select", "label": "Document Type", "options": ["health_certificate", "test_result", "medical_report", "form", "other"], "required": true },
+                "description": { "type": "textarea", "label": "Description (optional)" }
+              }
+            },
+            "actions": {
+              "cancel": { "type": "button", "label": "Cancel", "action": "close_modal", "style": "secondary" },
+              "upload": { "type": "button", "label": "Upload", "action": "upload_document", "style": "primary" }
+            }
+          }
+        }
+      },
+      "messages": {
+        "id": "employee_messages",
+        "route": "/employee/messages",
+        "service": "messaging",
+        "access": "employee",
+        "layout": "main",
+        "components": {
+          "sidebar": {
+            "type": "sidebar",
+            "width": { "mobile": "100%", "desktop": "300px" },
+            "components": {
+              "search": { "type": "input", "placeholder": "Search conversations..." },
+              "conversations_list": {
+                "type": "list",
+                "data_source": "messaging_service.conversations",
+                "item_template": {
+                  "avatar": { "type": "avatar", "src": "{{conversation.avatar}}", "name": "{{conversation.name}}" },
+                  "name": { "type": "text", "value": "{{conversation.name}}", "style": "contact_name" },
+                  "last_message": { "type": "text", "value": "{{conversation.last_message}}", "style": "message_preview" },
+                  "timestamp": { "type": "text", "value": "{{conversation.last_timestamp}}", "style": "timestamp" },
+                  "unread_badge": { "type": "badge", "value": "{{conversation.unread_count}}", "condition": "conversation.unread_count > 0" }
+                }
+              }
+            }
+          },
+          "chat_area": {
+            "type": "chat_interface",
+            "components": {
+              "header": {
+                "contact_info": {
+                  "avatar": { "type": "avatar", "src": "{{active_conversation.avatar}}" },
+                  "name": { "type": "text", "value": "{{active_conversation.name}}", "style": "h3" },
+                  "status": { "type": "status_indicator", "status": "{{active_conversation.online_status}}" }
+                },
+                "actions": {
+                  "video_call": { "type": "button", "icon": "video", "action": "start_video_call" },
+                  "phone_call": { "type": "button", "icon": "phone", "action": "start_phone_call" }
+                }
+              },
+              "messages_area": {
+                "type": "messages_list",
+                "data_source": "messaging_service.messages",
+                "item_template": {
+                  "message": {
+                    "content": { "type": "text", "value": "{{message.content}}" },
+                    "timestamp": { "type": "text", "value": "{{message.timestamp}}", "style": "timestamp" },
+                    "alignment": "{{message.sender_id == current_user.id ? 'right' : 'left'}}",
+                    "attachments": {
+                      "type": "file_list",
+                      "files": "{{message.attachments}}",
+                      "condition": "message.attachments.length > 0"
+                    }
+                  }
+                }
+              },
+              "input_area": {
+                "type": "message_input",
+                "components": {
+                  "text_input": { "type": "textarea", "placeholder": "Type your message...", "auto_resize": true },
+                  "attachments": { "type": "button", "icon": "paperclip", "action": "attach_file" },
+                  "send": { "type": "button", "icon": "send", "action": "send_message", "style": "primary" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "video_call": {
+        "id": "employee_video_call",
+        "route": "/employee/video-call/:sessionId",
+        "service": "telemedicine",
+        "access": "employee",
+        "layout": "fullscreen",
+        "components": {
+          "video_container": {
+            "type": "video_interface",
+            "components": {
+              "main_video": {
+                "type": "video_stream",
+                "stream": "remote_video",
+                "size": { "mobile": "100%x400px", "desktop": "80%x600px" }
+              },
+              "pip_video": {
+                "type": "video_stream",
+                "stream": "local_video",
+                "size": "200x150px",
+                "position": "bottom_right",
+                "draggable": true
+              },
+              "controls": {
+                "type": "control_bar",
+                "position": "bottom",
+                "controls": [
+                  { "type": "button", "icon": "mic", "action": "toggle_microphone", "toggle": true },
+                  { "type": "button", "icon": "video", "action": "toggle_camera", "toggle": true },
+                  { "type": "button", "icon": "screen_share", "action": "toggle_screen_share" },
+                  { "type": "button", "icon": "chat", "action": "toggle_chat_panel" },
+                  { "type": "button", "icon": "end_call", "action": "end_call", "style": "danger" }
+                ]
+              }
+            }
+          },
+          "chat_panel": {
+            "type": "slide_panel",
+            "position": "right",
+            "width": "300px",
+            "toggleable": true,
+            "components": {
+              "messages": {
+                "type": "messages_list",
+                "data_source": "telemedicine_service.session_messages"
+              },
+              "input": {
+                "type": "message_input",
+                "placeholder": "Type a message..."
+              }
+            }
+          }
+        }
+      }
+    },
+    "oh_professional_screens": {
+      "dashboard": {
+        "id": "oh_professional_dashboard",
+        "route": "/oh/dashboard",
+        "service": "appointment",
+        "access": "oh_professional",
+        "layout": "main",
+        "components": {
+          "header": {
+            "welcome": { "type": "text", "value": "Hello, Dr. {{professional.name}}", "style": "h2" },
+            "date": { "type": "text", "value": "{{current_date}}", "style": "subtitle" }
+          },
+          "todays_schedule": {
+            "type": "card",
+            "title": "Today's Schedule",
+            "appointment_list": {
+              "type": "list",
+              "data_source": "appointment_service.todays_appointments",
+              "item_template": {
+                "time": { "type": "text", "value": "{{appointment.time}}", "style": "time_slot" },
+                "patient": { "type": "text", "value": "{{appointment.employee.name}}", "style": "patient_name" },
+                "type": { "type": "badge", "value": "{{appointment.type}}" },
+                "mode": { "type": "icon", "icon": "{{appointment.mode}}" },
+                "actions": {
+                  "start_consultation": { "type": "button", "label": "Start", "action": "start_consultation", "condition": "appointment.can_start" },
+                  "view_profile": { "type": "button", "label": "Profile", "action": "view_patient_profile" },
+                  "reschedule": { "type": "button", "label": "Reschedule", "action": "reschedule_appointment" }
+                }
+              }
+            }
+          },
+          "patient_overview": {
+            "type": "card",
+            "title": "Patient Overview",
+            "metrics": {
+              "total_patients": { "type": "metric", "label": "Total Patients", "value": "{{metrics.total_patients}}" },
+              "active_cases": { "type": "metric", "label": "Active Cases", "value": "{{metrics.active_cases}}" },
+              "pending_reviews": { "type": "metric", "label": "Pending Reviews", "value": "{{metrics.pending_reviews}}" }
+            }
+          },
+          "quick_actions": {
+            "type": "grid",
+            "columns": { "mobile": 1, "desktop": 4 },
+            "actions": [
+              { "type": "button", "label": "Patient Records", "icon": "users", "action": "navigate_patients" },
+              { "type": "button", "label": "Assessments", "icon": "clipboard", "action": "navigate_assessments" },
+              "type": "button", "label": "Documents", "icon": "file", "action": "navigate_documents" },
+              { "type": "button", "label": "Reports", "icon": "chart", "action": "navigate_reports" }
+            ]
+          },
+          "pending_tasks": {
+            "type": "card",
+            "title": "Pending Tasks",
+            "task_list": {
+              "type": "checklist",
+              "data_source": "employee_service.pending_tasks",
+              "item_template": {
+                "description": { "type": "text", "value": "{{task.description}}" },
+                "priority": { "type": "badge", "value": "{{task.priority}}", "color": "{{task.priority_color}}" },
+                "due_date": { "type": "text", "value": "{{task.due_date}}", "style": "timestamp" },
+                "action": { "type": "button", "label": "Complete", "action": "complete_task" }
+              }
+            }
+          }
+        }
+      },
+      "patients": {
+        "id": "oh_patient_records",
+        "route": "/oh/patients",
+        "service": "employee",
+        "access": "oh_professional",
+        "layout": "main",
+        "components": {
+          "header": {
+            "title": { "type": "text", "value": "Employee Health Records", "style": "h2" },
+            "search": { "type": "input", "placeholder": "Search employees...", "icon": "search" }
+          },
+          "filters": {
+            "type": "filter_bar",
+            "filters": [
+              { "type": "select", "label": "Department", "options": ["all", "engineering", "sales", "admin"] },
+              { "type": "select", "label": "Health Status", "options": ["all", "active", "needs_attention", "overdue"] },
+              { "type": "select", "label": "Last Visit", "options": ["all", "last_month", "last_3months", "over_6months"] }
+            ]
+          },
+          "patients_table": {
+            "type": "data_table",
+            "data_source": "employee_service.all_employees",
+            "columns": [
+              { "key": "name", "label": "Name", "sortable": true },
+              { "key": "employee_id", "label": "Employee ID" },
+              { "key": "department", "label": "Department" },
+              { "key": "last_visit", "label": "Last Visit", "sortable": true },
+              { "key": "health_status", "label": "Status", "type": "status_badge" },
+              { "key": "actions", "label": "Actions", "type": "action_buttons" }
+            ],
+            "row_template": {
+              "name": { "type": "link", "value": "{{employee.name}}", "action": "view_patient_detail" },
+              "employee_id": { "type": "text", "value": "{{employee.employee_number}}" },
+              "department": { "type": "text", "value": "{{employee.department}}" },
+              "last_visit": { "type": "text", "value": "{{employee.last_appointment_date}}" },
+              "health_status": { "type": "badge", "value": "{{employee.health_status}}", "color": "{{employee.status_color}}" },
+              "actions": {
+                "type": "button_group",
+                "buttons": [
+                  { "type": "button", "label": "View", "action": "view_patient_detail" },
+                  { "type": "button", "label": "Book", "action": "book_appointment" },
+                  { "type": "button", "label": "Message", "action": "send_message" }
+                ]
+              }
+            },
+            "pagination": true,
+            "page_size": 20
+          }
+        }
+      },
+      "assessments": {
+        "id": "oh_assessments",
+        "route": "/oh/assessments",
+        "service": "employee",
+        "access": "oh_professional",
+        "layout": "main",
+        "components": {
+          "header": {
+            "title": { "type": "text", "value": "Occupational Assessments", "style": "h2" },
+            "new_assessment": { "type": "button", "label": "New Assessment", "action": "create_assessment", "style": "primary" }
+          },
+          "assessment_types": {
+            "type": "grid",
+            "columns": { "mobile": 1, "desktop": 3 },
+            "items": [
+              {
+                "type": "card",
+                "title": "Pre-Employment Assessment",
+                "description": "Health assessment for new hires",
+                "icon": "user_plus",
+                "action": "start_pre_employment_assessment"
+              },
+              {
+                "type": "card",
+                "title": "Periodic Health Review",
+                "description": "Regular health monitoring",
+                "icon": "calendar",
+                "action": "start_periodic_review"
+              },
+              {
+                "type": "card",
+                "title": "Fitness for Work",
+                "description": "Work capability assessment",
+                "icon": "shield",
+                "action": "start_fitness_assessment"
+              },
+              {
+                "type": "card",
+                "title": "Return to Work",
+                "description": "Post-illness/injury assessment",
+                "icon": "arrow_back",
+                "action": "start_return_to_work"
+              }
+            ]
+          },
+          "recent_assessments": {
+            "type": "card",
+            "title": "Recent Assessments",
+            "assessment_list": {
+              "type": "list",
+              "data_source": "employee_service.recent_assessments",
+              "item_template": {
+                "employee": { "type": "text", "value": "{{assessment.employee.name}}", "style": "patient_name" },
+                "type": { "type": "badge", "value": "{{assessment.type}}" },
+                "date": { "type": "text", "value": "{{assessment.date}}", "style": "timestamp" },
+                "status": { "type": "status_badge", "value": "{{assessment.status}}" },
+                "actions": {
+                  "view": { "type": "button", "label": "View", "action": "view_assessment" },
+                  "continue": { "type": "button", "label": "Continue", "action": "continue_assessment", "condition": "assessment.status == 'in_progress'" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "manager_screens": {
+      "dashboard": {
+        "id": "manager_dashboard",
+        "route": "/manager/dashboard",
+        "service": "employee",
+        "access": "manager",
+        "layout": "main",
+        "components": {
+          "header": {
+            "title": { "type": "text", "value": "Team Health Overview", "style": "h2" },
+            "date_range": { "type": "date_range_picker", "default": "last_30_days" }
+          },
+          "key_metrics": {
+            "type": "metrics_grid",
+            "columns": { "mobile": 1, "desktop": 4 },
+            "metrics": [
+              { "label": "Team Health Score", "value": "{{metrics.health_score}}", "unit": "%", "trend": "{{metrics.health_trend}}" },
+              { "label": "Compliance Rate", "value": "{{metrics.compliance_rate}}", "unit": "%", "trend": "{{metrics.compliance_trend}}" },
+              { "label": "Overdue Assessments", "value": "{{metrics.overdue_assessments}}", "trend": "{{metrics.overdue_trend}}" },
+              { "label": "Active Cases", "value": "{{metrics.active_cases}}", "trend": "{{metrics.cases_trend}}" }
+            ]
+          },
+          "health_distribution": {
+            "type": "card",
+            "title": "Team Health Distribution",
+            "chart": {
+              "type": "pie_chart",
+              "data_source": "employee_service.health_distribution",
+              "segments": [
+                { "label": "Healthy", "value": "{{distribution.healthy}}", "color": "#00703c" },
+                { "label": "Needs Attention", "value": "{{distribution.attention}}", "color": "#fa9200" },
+                { "label": "High Risk", "value": "{{distribution.high_risk}}", "color": "#d5281b" }
+              ]
+            }
+          },
+          "compliance_trends": {
+            "type": "card",
+            "title": "Compliance Trends",
+            "chart": {
+              "type": "line_chart",
+              "data_source": "employee_service.compliance_trends",
+              "x_axis": "month",
+              "y_axis": "compliance_percentage",
+              "time_range": "last_12_months"
+            }
+          },
+          "team_alerts": {
+            "type": "card",
+            "title": "Team Alerts",
+            "alert_list": {
+              "type": "list",
+              "data_source": "employee_service.team_alerts",
+              "item_template": {
+                "severity": { "type": "icon", "icon": "{{alert.severity_icon}}", "color": "{{alert.severity_color}}" },
+                "message": { "type": "text", "value": "{{alert.message}}" },
+                "employee": { "type": "link", "value": "{{alert.employee_name}}", "action": "view_employee_detail" },
+                "date": { "type": "text", "value": "{{alert.date}}", "style": "timestamp" },
+                "action": { "type": "button", "label": "Review", "action": "review_alert" }
+              }
+            }
+          },
+          "department_breakdown": {
+            "type": "card",
+            "title": "Department Health Breakdown",
+            "data_table": {
+              "type": "data_table",
+              "data_source": "employee_service.department_metrics",
+              "columns": [
+                { "key": "department", "label": "Department" },
+                { "key": "total_employees", "label": "Total" },
+                { "key": "health_score", "label": "Health Score", "type": "progress_bar" },
+                { "key": "compliance", "label": "Compliance", "type": "percentage" },
+                { "key": "overdue", "label": "Overdue" }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "shared_screens": {
+      "profile": {
+        "id": "user_profile",
+        "route": "/profile",
+        "service": "auth",
+        "access": "authenticated",
+        "layout": "main",
+        "components": {
+          "header": {
+            "title": { "type": "text", "value": "Profile Settings", "style": "h2" },
+            "avatar": { "type": "avatar", "src": "{{user.avatar}}", "size": "large", "editable": true }
+          },
+          "personal_info": {
+            "type": "card",
+            "title": "Personal Information",
+            "form": {
+              "first_name": { "type": "input", "label": "First Name", "value": "{{user.first_name}}", "required": true },
+              "last_name": { "type": "input", "label": "Last Name", "value": "{{user.last_name}}", "required": true },
+              "email": { "type": "input", "label": "Email", "value": "{{user.email}}", "type": "email", "disabled": true },
+              "phone": { "type": "input", "label": "Phone Number", "value": "{{user.phone}}" },
+              "department": { "type": "input", "label": "Department", "value": "{{user.department}}", "disabled": true }
+            }
+          },
+          "security": {
+            "type": "card",
+            "title": "Security Settings",
+            "form": {
+              "current_password": { "type": "input", "label": "Current Password", "type": "password" },
+              "new_password": { "type": "input", "label": "New Password", "type": "password" },
+              "confirm_password": { "type": "input", "label": "Confirm Password", "type": "password" },
+              "two_factor": { "type": "checkbox", "label": "Enable Two-Factor Authentication", "value": "{{user.two_factor_enabled}}" }
+            }
+          },
+          "preferences": {
+            "type": "card",
+            "title": "Notification Preferences",
+            "form": {
+              "email_notifications": { "type": "checkbox", "label": "Email Notifications", "value": "{{user.email_notifications}}" },
+              "sms_notifications": { "type": "checkbox", "label": "SMS Notifications", "value": "{{user.sms_notifications}}" },
+              "push_notifications": { "type": "checkbox", "label": "Push Notifications", "value": "{{user.push_notifications}}" },
+              "appointment_reminders": { "type": "select", "label": "Appointment Reminders", "options": ["24_hours", "12_hours", "2_hours"], "value": "{{user.reminder_preference}}" }
+            }
+          },
+          "actions": {
+            "save": { "type": "button", "label": "Save Changes", "action": "save_profile", "style": "primary" },
+            "cancel": { "type": "button", "label": "Cancel", "action": "cancel_changes", "style": "secondary" }
+          }
+        }
+      },
+      "notifications": {
+        "id": "notifications_center",
+        "route": "/notifications",
+        "service": "notification",
+        "access": "authenticated",
+        "layout": "modal",
+        "components": {
+          "header": {
+            "title": { "type": "text", "value": "Notifications", "style": "h3" },
+            "mark_all_read": { "type": "button", "label": "Mark All Read", "action": "mark_all_read" }
+          },
+          "notification_tabs": {
+            "type": "tabs",
+            "tabs": [
+              { "id": "all", "label": "All", "active": true },
+              { "id": "unread", "label": "Unread", "badge": "{{unread_count}}" },
+              { "id": "appointments", "label": "Appointments" },
+              { "id": "messages", "label": "Messages" },
+              { "id": "system", "label": "System" }
+            ]
+          },
+          "notifications_list": {
+            "type": "list",
+            "data_source": "notification_service.notifications",
+            "item_template": {
+              "icon": { "type": "icon", "icon": "{{notification.type_icon}}", "color": "{{notification.type_color}}" },
+              "title": { "type": "text", "value": "{{notification.title}}", "style": "notification_title" },
+              "message": { "type": "text", "value": "{{notification.message}}", "style": "notification_body" },
+              "timestamp": { "type": "text", "value": "{{notification.timestamp}}", "style": "timestamp" },
+              "read_status": { "type": "indicator", "status": "{{notification.read_status}}" },
+              "actions": {
+                "mark_read": { "type": "button", "icon": "check", "action": "mark_as_read", "condition": "!notification.is_read" },
+                "delete": { "type": "button", "icon": "trash", "action": "delete_notification" },
+                "view": { "type": "button", "label": "View", "action": "view_notification_detail", "condition": "notification.has_detail" }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "navigation": {
+    "employee": {
+      "main_nav": [
+        { "id": "dashboard", "label": "Dashboard", "icon": "home", "route": "/employee/dashboard" },
+        { "id": "appointments", "label": "Appointments", "icon": "calendar", "route": "/employee/appointments" },
+        { "id": "documents", "label": "Documents", "icon": "file", "route": "/employee/documents" },
+        { "id": "messages", "label": "Messages", "icon": "message", "route": "/employee/messages", "badge": "unread_count" },
+        { "id": "profile", "label": "Profile", "icon": "user", "route": "/profile" }
+      ],
+      "mobile_nav": {
+        "type": "bottom_tabs",
+        "items": [
+          { "id": "dashboard", "icon": "home", "route": "/employee/dashboard" },
+          { "id": "appointments", "icon": "calendar", "route": "/employee/appointments" },
+          { "id": "messages", "icon": "message", "route": "/employee/messages", "badge": "unread_count" },
+          { "id": "documents", "icon": "file", "route": "/employee/documents" },
+          { "id": "profile", "icon": "user", "route": "/profile" }
+        ]
+      }
+    },
+    "oh_professional": {
+      "main_nav": [
+        { "id": "dashboard", "label": "Dashboard", "icon": "home", "route": "/oh/dashboard" },
+        { "id": "patients", "label": "Patients", "icon": "users", "route": "/oh/patients" },
+        { "id": "assessments", "label": "Assessments", "icon": "clipboard", "route": "/oh/assessments" },
+        { "id": "appointments", "label": "Appointments", "icon": "calendar", "route": "/oh/appointments" },
+        { "id": "documents", "label": "Documents", "icon": "file", "route": "/oh/documents" },
+        { "id": "reports", "label": "Reports", "icon": "chart", "route": "/oh/reports" },
+        { "id": "profile", "label": "Profile", "icon": "user", "route": "/profile" }
+      ]
+    },
+    "manager": {
+      "main_nav": [
+        { "id": "dashboard", "label": "Dashboard", "icon": "home", "route": "/manager/dashboard" },
+        { "id": "team", "label": "Team Health", "icon": "users", "route": "/manager/team" },
+        { "id": "compliance", "label": "Compliance", "icon": "shield", "route": "/manager/compliance" },
+        { "id": "reports", "label": "Reports", "icon": "chart", "route": "/manager/reports" },
+        { "id": "profile", "label": "Profile", "icon": "user", "route": "/profile" }
+      ]
+    }
+  },
+  "workflows": {
+    "employee_book_appointment": {
+      "name": "Employee Books Appointment",
+      "description": "Complete workflow for employee to book and attend an appointment",
+      "steps": [
+        {
+          "step": 1,
+          "screen": "employee_dashboard",
+          "action": "click_book_appointment",
+          "next": "employee_appointments"
+        },
+        {
+          "step": 2,
+          "screen": "employee_appointments",
+          "action": "complete_booking_wizard",
+          "services": ["appointment", "notification"],
+          "next": "employee_dashboard"
+        },
+        {
+          "step": 3,
+          "screen": "employee_dashboard",
+          "trigger": "appointment_reminder",
+          "action": "join_appointment",
+          "next": "employee_video_call"
+        },
+        {
+          "step": 4,
+          "screen": "employee_video_call",
+          "action": "complete_consultation",
+          "services": ["telemedicine", "messaging"],
+          "next": "employee_dashboard"
+        }
+      ]
+    },
+    "oh_professional_consultation": {
+      "name": "OH Professional Conducts Consultation",
+      "description": "Complete workflow for OH professional to conduct patient consultation",
+      "steps": [
+        {
+          "step": 1,
+          "screen": "oh_professional_dashboard",
+          "action": "review_todays_appointments",
+          "next": "oh_patient_records"
+        },
+        {
+          "step": 2,
+          "screen": "oh_patient_records",
+          "action": "review_patient_history",
+          "services": ["employee", "document"],
+          "next": "oh_professional_dashboard"
+        },
+        {
+          "step": 3,
+          "screen": "oh_professional_dashboard",
+          "action": "start_consultation",
+          "next": "employee_video_call"
+        },
+        {
+          "step": 4,
+          "screen": "employee_video_call",
+          "action": "conduct_consultation",
+          "services": ["telemedicine", "messaging"],
+          "next": "oh_assessments"
+        },
+        {
+          "step": 5,
+          "screen": "oh_assessments",
+          "action": "complete_assessment",
+          "services": ["employee", "document"],
+          "next": "oh_professional_dashboard"
+        }
+      ]
+    },
+    "manager_team_review": {
+      "name": "Manager Reviews Team Health",
+      "description": "Manager workflow to review and manage team health status",
+      "steps": [
+        {
+          "step": 1,
+          "screen": "manager_dashboard",
+          "action": "review_team_metrics",
+          "services": ["employee", "appointment"]
+        },
+        {
+          "step": 2,
+          "screen": "manager_dashboard",
+          "action": "investigate_alerts",
+          "services": ["employee", "notification"]
+        },
+        {
+          "step": 3,
+          "screen": "manager_dashboard",
+          "action": "generate_reports",
+          "services": ["employee", "document"]
+        }
+      ]
+    }
+  },
+  "data_flows": {
+    "services_integration": {
+      "auth_service": {
+        "endpoints": [
+          { "endpoint": "/auth/login", "method": "POST", "screens": ["login"] },
+          { "endpoint": "/auth/profile", "method": "GET", "screens": ["profile"] },
+          { "endpoint": "/auth/refresh", "method": "POST", "screens": ["all"] }
+        ]
+      },
+      "employee_service": {
+        "endpoints": [
+          { "endpoint": "/employee/dashboard", "method": "GET", "screens": ["employee_dashboard"] },
+          { "endpoint": "/employee/health-status", "method": "GET", "screens": ["employee_dashboard"] },
+          { "endpoint": "/employee/activity", "method": "GET", "screens": ["employee_dashboard"] },
+          { "endpoint": "/employees", "method": "GET", "screens": ["oh_patient_records"] },
+          { "endpoint": "/employee/{id}/health-info", "method": "GET", "screens": ["oh_patient_records"] }
+        ]
+      },
+      "appointment_service": {
+        "endpoints": [
+          { "endpoint": "/appointments/upcoming", "method": "GET", "screens": ["employee_dashboard"] },
+          { "endpoint": "/appointments/availability", "method": "GET", "screens": ["employee_appointments"] },
+          { "endpoint": "/appointments", "method": "POST", "screens": ["employee_appointments"] },
+          { "endpoint": "/appointments/todays", "method": "GET", "screens": ["oh_professional_dashboard"] }
+        ]
+      },
+      "document_service": {
+        "endpoints": [
+          { "endpoint": "/documents/user", "method": "GET", "screens": ["employee_documents"] },
+          { "endpoint": "/documents", "method": "POST", "screens": ["employee_documents"] },
+          { "endpoint": "/documents/{id}/download", "method": "GET", "screens": ["employee_documents"] }
+        ]
+      },
+      "messaging_service": {
+        "endpoints": [
+          { "endpoint": "/conversations", "method": "GET", "screens": ["employee_messages"] },
+          { "endpoint": "/conversations/{id}/messages", "method": "GET", "screens": ["employee_messages"] },
+          { "endpoint": "/conversations/{id}/messages", "method": "POST", "screens": ["employee_messages"] }
+        ]
+      },
+      "telemedicine_service": {
+        "endpoints": [
+          { "endpoint": "/video-sessions", "method": "POST", "screens": ["employee_video_call"] },
+          { "endpoint": "/video-sessions/{id}/join", "method": "POST", "screens": ["employee_video_call"] },
+          { "endpoint": "/video-sessions/{id}/end", "method": "POST", "screens": ["employee_video_call"] }
+        ]
+      },
+      "notification_service": {
+        "endpoints": [
+          { "endpoint": "/notifications", "method": "GET", "screens": ["notifications_center"] },
+          { "endpoint": "/notifications/{id}/read", "method": "PUT", "screens": ["notifications_center"] },
+          { "endpoint": "/notifications/unread-count", "method": "GET", "screens": ["all"] }
+        ]
+      }
+    }
+  },
+  "responsive_design": {
+    "breakpoints": {
+      "mobile": "0-768px",
+      "tablet": "769-1024px",
+      "desktop": "1025px+"
+    },
+    "layout_patterns": {
+      "mobile": {
+        "navigation": "bottom_tabs",
+        "cards": "single_column",
+        "modals": "fullscreen",
+        "tables": "card_view"
+      },
+      "desktop": {
+        "navigation": "sidebar",
+        "cards": "multi_column_grid",
+        "modals": "centered",
+        "tables": "data_table"
+      }
+    }
+  },
+  "ui_components": {
+    "design_system": "NHS UK Design System",
+    "color_palette": {
+      "primary": "#005eb8",
+      "secondary": "#00703c",
+      "success": "#00703c",
+      "warning": "#fa9200",
+      "error": "#d5281b",
+      "neutral": "#425563"
+    },
+    "typography": {
+      "font_family": "Frutiger, Arial, sans-serif",
+      "scales": {
+        "h1": "32px",
+        "h2": "24px",
+        "h3": "20px",
+        "body": "16px",
+        "small": "14px"
+      }
+    },
+    "spacing": {
+      "unit": "8px",
+      "scale": ["8px", "16px", "24px", "32px", "48px", "64px"]
+    }
+  },
+  "accessibility": {
+    "standards": "WCAG 2.1 AA",
+    "features": [
+      "keyboard_navigation",
+      "screen_reader_support",
+      "high_contrast_mode",
+      "focus_indicators",
+      "alt_text_images",
+      "aria_labels"
+    ]
+  },
+  "performance": {
+    "targets": {
+      "page_load": "< 3 seconds",
+      "first_contentful_paint": "< 1.5 seconds",
+      "time_to_interactive": "< 5 seconds"
+    },
+    "optimization": [
+      "code_splitting",
+      "lazy_loading",
+      "image_optimization",
+      "caching_strategies"
+    ]
+  },
+  "security": {
+    "authentication": "JWT with refresh tokens",
+    "authorization": "role_based_access_control",
+    "data_encryption": "AES-256",
+    "transport_security": "TLS 1.3",
+    "content_security_policy": "strict",
+    "session_management": "secure_cookies"
+  }
+}

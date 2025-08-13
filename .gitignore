@@ -1,0 +1,9 @@
+# Ignore Docker-related files
+*.log
+docker-compose.override.yml
+.docker/
+Dockerfile.*
+.dockerignore
+docker-compose*.yml
+
+.env

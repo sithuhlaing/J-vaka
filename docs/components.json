@@ -1,0 +1,881 @@
+{
+  "design_system": {
+    "name": "OH eHR Atomic Design System",
+    "version": "1.0.0",
+    "description": "NHS-compliant atomic design system for Occupational Health EHR",
+    "framework": "React + TypeScript",
+    "ui_library": "NHS UK Design System",
+    "methodology": "Atomic Design (Atoms → Molecules → Organisms → Templates → Pages)"
+  },
+  "design_tokens": {
+    "colors": {
+      "primary": "#005eb8",
+      "secondary": "#00703c",
+      "success": "#00703c",
+      "warning": "#fa9200",
+      "error": "#d5281b",
+      "neutral_50": "#f8fafc",
+      "neutral_100": "#f1f5f9",
+      "neutral_500": "#64748b",
+      "neutral_900": "#0f172a",
+      "patient": "#e1f5fe",
+      "clinical": "#e8f5e8",
+      "manager": "#fff8e1",
+      "admin": "#f3e5f5",
+      "security": "#ffebee"
+    },
+    "typography": {
+      "font_family": "Frutiger, Arial, sans-serif",
+      "font_sizes": {
+        "xs": "12px",
+        "sm": "14px",
+        "base": "16px",
+        "lg": "18px",
+        "xl": "20px",
+        "2xl": "24px",
+        "3xl": "30px",
+        "4xl": "36px"
+      },
+      "font_weights": {
+        "normal": 400,
+        "medium": 500,
+        "semibold": 600,
+        "bold": 700
+      }
+    },
+    "spacing": {
+      "unit": "8px",
+      "scale": ["4px", "8px", "12px", "16px", "20px", "24px", "32px", "40px", "48px", "64px"]
+    },
+    "breakpoints": {
+      "mobile": "0-768px",
+      "tablet": "769-1024px",
+      "desktop": "1025px+"
+    }
+  },
+  "atoms": {
+    "button": {
+      "name": "Button",
+      "description": "NHS-compliant button component",
+      "file_path": "src/components/atoms/Button.tsx",
+      "props": {
+        "variant": {
+          "type": "enum",
+          "options": ["primary", "secondary", "success", "warning", "error"],
+          "default": "primary"
+        },
+        "size": {
+          "type": "enum",
+          "options": ["sm", "md", "lg"],
+          "default": "md"
+        },
+        "disabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "loading": {
+          "type": "boolean",
+          "default": false
+        },
+        "icon": {
+          "type": "string",
+          "optional": true
+        },
+        "onClick": {
+          "type": "function",
+          "required": true
+        }
+      },
+      "usage": ["all_roles"],
+      "accessibility": ["keyboard_navigation", "screen_reader", "focus_indicators"],
+      "examples": [
+        {
+          "name": "Primary Button",
+          "props": { "variant": "primary", "children": "Book Appointment" }
+        },
+        {
+          "name": "Loading Button",
+          "props": { "variant": "primary", "loading": true, "children": "Saving..." }
+        }
+      ]
+    },
+    "input": {
+      "name": "Input",
+      "description": "Form input field with validation",
+      "file_path": "src/components/atoms/Input.tsx",
+      "props": {
+        "type": {
+          "type": "enum",
+          "options": ["text", "email", "password", "number", "tel", "url"],
+          "default": "text"
+        },
+        "placeholder": {
+          "type": "string",
+          "optional": true
+        },
+        "value": {
+          "type": "string",
+          "required": true
+        },
+        "onChange": {
+          "type": "function",
+          "required": true
+        },
+        "error": {
+          "type": "string",
+          "optional": true
+        },
+        "disabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "required": {
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "usage": ["all_roles"],
+      "accessibility": ["aria_labels", "error_announcements", "required_indicators"]
+    },
+    "icon": {
+      "name": "Icon",
+      "description": "Lucide React icon component",
+      "file_path": "src/components/atoms/Icon.tsx",
+      "props": {
+        "name": {
+          "type": "string",
+          "required": true,
+          "description": "Lucide icon name"
+        },
+        "size": {
+          "type": "enum",
+          "options": ["sm", "md", "lg", "xl"],
+          "default": "md"
+        },
+        "color": {
+          "type": "string",
+          "optional": true
+        },
+        "className": {
+          "type": "string",
+          "optional": true
+        }
+      },
+      "usage": ["all_roles"],
+      "icon_library": "lucide-react"
+    },
+    "text": {
+      "name": "Text",
+      "description": "Typography component with semantic variants",
+      "file_path": "src/components/atoms/Text.tsx",
+      "props": {
+        "variant": {
+          "type": "enum",
+          "options": ["h1", "h2", "h3", "h4", "body", "caption", "label"],
+          "default": "body"
+        },
+        "color": {
+          "type": "string",
+          "optional": true
+        },
+        "weight": {
+          "type": "enum",
+          "options": ["normal", "medium", "semibold", "bold"],
+          "optional": true
+        },
+        "children": {
+          "type": "ReactNode",
+          "required": true
+        }
+      },
+      "usage": ["all_roles"]
+    },
+    "badge": {
+      "name": "Badge",
+      "description": "Status and notification badge",
+      "file_path": "src/components/atoms/Badge.tsx",
+      "props": {
+        "variant": {
+          "type": "enum",
+          "options": ["default", "success", "warning", "error", "info"],
+          "default": "default"
+        },
+        "size": {
+          "type": "enum",
+          "options": ["sm", "md", "lg"],
+          "default": "md"
+        },
+        "children": {
+          "type": "ReactNode",
+          "required": true
+        }
+      },
+      "usage": ["all_roles"],
+      "role_specific_variants": {
+        "patient": ["appointment_status", "health_status"],
+        "clinical": ["priority", "urgency", "patient_status"],
+        "manager": ["performance", "compliance"],
+        "admin": ["system_status"],
+        "security": ["threat_level", "compliance_status"]
+      }
+    },
+    "avatar": {
+      "name": "Avatar",
+      "description": "User profile picture or initials",
+      "file_path": "src/components/atoms/Avatar.tsx",
+      "props": {
+        "src": {
+          "type": "string",
+          "optional": true
+        },
+        "name": {
+          "type": "string",
+          "required": true
+        },
+        "size": {
+          "type": "enum",
+          "options": ["sm", "md", "lg", "xl"],
+          "default": "md"
+        },
+        "status": {
+          "type": "enum",
+          "options": ["online", "offline", "busy", "away"],
+          "optional": true
+        }
+      },
+      "usage": ["all_roles"]
+    },
+    "checkbox": {
+      "name": "Checkbox",
+      "description": "NHS-compliant checkbox input",
+      "file_path": "src/components/atoms/Checkbox.tsx",
+      "props": {
+        "checked": {
+          "type": "boolean",
+          "required": true
+        },
+        "onChange": {
+          "type": "function",
+          "required": true
+        },
+        "label": {
+          "type": "string",
+          "required": true
+        },
+        "disabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "error": {
+          "type": "string",
+          "optional": true
+        }
+      },
+      "usage": ["all_roles"],
+      "accessibility": ["keyboard_navigation", "screen_reader_support"]
+    }
+  },
+  "molecules": {
+    "search_box": {
+      "name": "SearchBox",
+      "description": "Search input with icon and suggestions",
+      "file_path": "src/components/molecules/SearchBox.tsx",
+      "composed_of": ["input", "icon", "button"],
+      "props": {
+        "placeholder": {
+          "type": "string",
+          "default": "Search..."
+        },
+        "onSearch": {
+          "type": "function",
+          "required": true
+        },
+        "suggestions": {
+          "type": "array",
+          "optional": true
+        },
+        "loading": {
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "usage": ["clinical", "admin", "security"],
+      "use_cases": ["patient_search", "document_search", "audit_search"]
+    },
+    "form_field": {
+      "name": "FormField",
+      "description": "Input with label, validation, and help text",
+      "file_path": "src/components/molecules/FormField.tsx",
+      "composed_of": ["input", "text", "icon"],
+      "props": {
+        "label": {
+          "type": "string",
+          "required": true
+        },
+        "value": {
+          "type": "string",
+          "required": true
+        },
+        "onChange": {
+          "type": "function",
+          "required": true
+        },
+        "type": {
+          "type": "string",
+          "default": "text"
+        },
+        "required": {
+          "type": "boolean",
+          "default": false
+        },
+        "error": {
+          "type": "string",
+          "optional": true
+        },
+        "helpText": {
+          "type": "string",
+          "optional": true
+        }
+      },
+      "usage": ["all_roles"],
+      "validation_rules": ["required", "email", "phone", "nhs_number"]
+    },
+    "patient_card": {
+      "name": "PatientCard",
+      "description": "Patient summary card with key information",
+      "file_path": "src/components/molecules/PatientCard.tsx",
+      "composed_of": ["avatar", "text", "badge", "button"],
+      "props": {
+        "patient": {
+          "type": "object",
+          "required": true,
+          "properties": {
+            "id": "string",
+            "name": "string",
+            "dateOfBirth": "string",
+            "nhsNumber": "string",
+            "status": "string"
+          }
+        },
+        "onViewDetails": {
+          "type": "function",
+          "required": true
+        },
+        "showActions": {
+          "type": "boolean",
+          "default": true
+        }
+      },
+      "usage": ["clinical", "manager"],
+      "role_specific_data": {
+        "clinical": ["medical_alerts", "current_medications"],
+        "manager": ["compliance_status", "last_visit"]
+      }
+    },
+    "appointment_card": {
+      "name": "AppointmentCard",
+      "description": "Appointment information card",
+      "file_path": "src/components/molecules/AppointmentCard.tsx",
+      "composed_of": ["text", "badge", "button", "icon"],
+      "props": {
+        "appointment": {
+          "type": "object",
+          "required": true,
+          "properties": {
+            "id": "string",
+            "patientName": "string",
+            "dateTime": "string",
+            "type": "string",
+            "mode": "string",
+            "status": "string"
+          }
+        },
+        "onJoin": {
+          "type": "function",
+          "optional": true
+        },
+        "onReschedule": {
+          "type": "function",
+          "optional": true
+        },
+        "onCancel": {
+          "type": "function",
+          "optional": true
+        }
+      },
+      "usage": ["patient", "clinical"],
+      "states": ["upcoming", "active", "completed", "cancelled"]
+    },
+    "health_metric": {
+      "name": "HealthMetric",
+      "description": "Health data visualization component",
+      "file_path": "src/components/molecules/HealthMetric.tsx",
+      "composed_of": ["text", "icon", "badge"],
+      "props": {
+        "label": {
+          "type": "string",
+          "required": true
+        },
+        "value": {
+          "type": "string | number",
+          "required": true
+        },
+        "unit": {
+          "type": "string",
+          "optional": true
+        },
+        "trend": {
+          "type": "enum",
+          "options": ["up", "down", "stable"],
+          "optional": true
+        },
+        "status": {
+          "type": "enum",
+          "options": ["normal", "warning", "critical"],
+          "default": "normal"
+        }
+      },
+      "usage": ["patient", "clinical", "manager"],
+      "metric_types": ["blood_pressure", "heart_rate", "temperature", "weight", "bmi"]
+    }
+  },
+  "organisms": {
+    "header_navigation": {
+      "name": "HeaderNavigation",
+      "description": "Main application header with navigation",
+      "file_path": "src/components/organisms/HeaderNavigation.tsx",
+      "composed_of": ["search_box", "avatar", "badge", "button"],
+      "props": {
+        "user": {
+          "type": "object",
+          "required": true,
+          "properties": {
+            "name": "string",
+            "role": "string",
+            "avatar": "string"
+          }
+        },
+        "notifications": {
+          "type": "array",
+          "optional": true
+        },
+        "onNotificationClick": {
+          "type": "function",
+          "optional": true
+        },
+        "onProfileClick": {
+          "type": "function",
+          "required": true
+        },
+        "onLogout": {
+          "type": "function",
+          "required": true
+        }
+      },
+      "usage": ["all_roles"],
+      "role_specific_features": {
+        "patient": ["appointment_alerts", "test_results"],
+        "clinical": ["patient_alerts", "schedule_notifications"],
+        "manager": ["team_alerts", "compliance_warnings"],
+        "admin": ["system_alerts", "user_activity"],
+        "security": ["security_alerts", "threat_notifications"]
+      }
+    },
+    "patient_dashboard": {
+      "name": "PatientDashboard",
+      "description": "Patient role dashboard widget",
+      "file_path": "src/components/organisms/PatientDashboard.tsx",
+      "composed_of": ["health_metric", "appointment_card", "patient_card"],
+      "props": {
+        "patient": {
+          "type": "object",
+          "required": true
+        },
+        "appointments": {
+          "type": "array",
+          "required": true
+        },
+        "healthMetrics": {
+          "type": "array",
+          "required": true
+        },
+        "onBookAppointment": {
+          "type": "function",
+          "required": true
+        }
+      },
+      "usage": ["patient"],
+      "data_sources": ["employee_service", "appointment_service", "document_service"]
+    },
+    "clinical_assessment_form": {
+      "name": "ClinicalAssessmentForm",
+      "description": "Clinical assessment and documentation form",
+      "file_path": "src/components/organisms/ClinicalAssessmentForm.tsx",
+      "composed_of": ["form_field", "text", "button", "checkbox"],
+      "props": {
+        "assessmentType": {
+          "type": "enum",
+          "options": ["pre_employment", "periodic", "fitness_for_work", "return_to_work"],
+          "required": true
+        },
+        "patient": {
+          "type": "object",
+          "required": true
+        },
+        "onSave": {
+          "type": "function",
+          "required": true
+        },
+        "onSubmit": {
+          "type": "function",
+          "required": true
+        }
+      },
+      "usage": ["clinical"],
+      "form_sections": ["patient_history", "physical_examination", "assessment", "recommendations"],
+      "validation": ["required_fields", "clinical_logic", "data_consistency"]
+    },
+    "video_call_interface": {
+      "name": "VideoCallInterface",
+      "description": "Video consultation interface",
+      "file_path": "src/components/organisms/VideoCallInterface.tsx",
+      "composed_of": ["button", "icon", "text"],
+      "props": {
+        "sessionId": {
+          "type": "string",
+          "required": true
+        },
+        "participants": {
+          "type": "array",
+          "required": true
+        },
+        "onEndCall": {
+          "type": "function",
+          "required": true
+        },
+        "onToggleMic": {
+          "type": "function",
+          "required": true
+        },
+        "onToggleCamera": {
+          "type": "function",
+          "required": true
+        }
+      },
+      "usage": ["patient", "clinical"],
+      "features": ["screen_sharing", "chat", "recording", "file_sharing"],
+      "integration": ["telemedicine_service", "messaging_service"]
+    },
+    "security_dashboard": {
+      "name": "SecurityDashboard",
+      "description": "Security monitoring and alerts dashboard",
+      "file_path": "src/components/organisms/SecurityDashboard.tsx",
+      "composed_of": ["health_metric", "badge", "text", "button"],
+      "props": {
+        "securityMetrics": {
+          "type": "array",
+          "required": true
+        },
+        "threats": {
+          "type": "array",
+          "required": true
+        },
+        "complianceStatus": {
+          "type": "object",
+          "required": true
+        },
+        "onInvestigateThreat": {
+          "type": "function",
+          "required": true
+        }
+      },
+      "usage": ["security"],
+      "monitoring_areas": ["access_logs", "data_breaches", "compliance_violations", "system_vulnerabilities"]
+    }
+  },
+  "templates": {
+    "main_layout": {
+      "name": "MainLayout",
+      "description": "Primary application layout with header, sidebar, and content",
+      "file_path": "src/components/templates/MainLayout.tsx",
+      "composed_of": ["header_navigation", "sidebar_navigation"],
+      "props": {
+        "children": {
+          "type": "ReactNode",
+          "required": true
+        },
+        "sidebarCollapsed": {
+          "type": "boolean",
+          "default": false
+        },
+        "user": {
+          "type": "object",
+          "required": true
+        }
+      },
+      "usage": ["all_roles"],
+      "responsive_behavior": {
+        "mobile": "collapsed_sidebar",
+        "tablet": "collapsible_sidebar",
+        "desktop": "persistent_sidebar"
+      }
+    },
+    "dashboard_layout": {
+      "name": "DashboardLayout",
+      "description": "Dashboard-specific layout with widget grid",
+      "file_path": "src/components/templates/DashboardLayout.tsx",
+      "composed_of": ["main_layout"],
+      "props": {
+        "widgets": {
+          "type": "array",
+          "required": true
+        },
+        "gridColumns": {
+          "type": "number",
+          "default": 12
+        }
+      },
+      "usage": ["all_roles"],
+      "grid_system": "CSS Grid with responsive breakpoints"
+    },
+    "wizard_layout": {
+      "name": "WizardLayout",
+      "description": "Multi-step form layout",
+      "file_path": "src/components/templates/WizardLayout.tsx",
+      "composed_of": ["main_layout", "button"],
+      "props": {
+        "steps": {
+          "type": "array",
+          "required": true
+        },
+        "currentStep": {
+          "type": "number",
+          "required": true
+        },
+        "onNext": {
+          "type": "function",
+          "required": true
+        },
+        "onPrevious": {
+          "type": "function",
+          "required": true
+        }
+      },
+      "usage": ["patient", "clinical"],
+      "use_cases": ["appointment_booking", "patient_registration", "clinical_assessment"]
+    }
+  },
+  "pages": {
+    "patient_dashboard": {
+      "name": "PatientDashboardPage",
+      "description": "Main dashboard for patient users",
+      "file_path": "src/pages/PatientDashboard.tsx",
+      "template": "dashboard_layout",
+      "organisms": ["patient_dashboard", "appointment_list", "health_summary"],
+      "route": "/patient/dashboard",
+      "access": "patient",
+      "data_requirements": [
+        {
+          "service": "employee_service",
+          "endpoint": "/employee/health-status"
+        },
+        {
+          "service": "appointment_service",
+          "endpoint": "/appointments/upcoming"
+        }
+      ],
+      "loading_states": ["initial_load", "appointment_refresh", "health_update"],
+      "error_handling": ["network_error", "unauthorized", "service_unavailable"]
+    },
+    "clinical_dashboard": {
+      "name": "ClinicalDashboardPage",
+      "description": "Main dashboard for clinical staff",
+      "file_path": "src/pages/ClinicalDashboard.tsx",
+      "template": "dashboard_layout",
+      "organisms": ["schedule_widget", "patient_alerts", "clinical_tools"],
+      "route": "/clinical/dashboard",
+      "access": "clinical",
+      "data_requirements": [
+        {
+          "service": "appointment_service",
+          "endpoint": "/appointments/todays"
+        },
+        {
+          "service": "employee_service",
+          "endpoint": "/employees/alerts"
+        }
+      ]
+    },
+    "appointment_booking": {
+      "name": "AppointmentBookingPage",
+      "description": "Multi-step appointment booking wizard",
+      "file_path": "src/pages/AppointmentBooking.tsx",
+      "template": "wizard_layout",
+      "organisms": ["appointment_type_selector", "calendar_widget", "confirmation_form"],
+      "route": "/patient/appointments/book",
+      "access": "patient",
+      "steps": [
+        {
+          "name": "appointment_type",
+          "component": "appointment_type_selector",
+          "validation": "required"
+        },
+        {
+          "name": "date_time",
+          "component": "calendar_widget",
+          "validation": "future_date_required"
+        },
+        {
+          "name": "confirmation",
+          "component": "confirmation_form",
+          "validation": "complete_form"
+        }
+      ]
+    }
+  },
+  "role_based_components": {
+    "patient": {
+      "exclusive_components": [
+        "health_status_widget",
+        "appointment_booking_widget",
+        "medical_history_timeline",
+        "prescription_list",
+        "test_results_viewer"
+      ],
+      "primary_workflows": [
+        "book_appointment",
+        "view_health_records",
+        "message_healthcare_team",
+        "join_video_consultation"
+      ]
+    },
+    "clinical": {
+      "exclusive_components": [
+        "patient_vitals_panel",
+        "soap_notes_editor",
+        "prescription_writer",
+        "clinical_decision_support",
+        "assessment_tools"
+      ],
+      "primary_workflows": [
+        "review_patient_records",
+        "conduct_assessment",
+        "document_encounter",
+        "prescribe_medication"
+      ]
+    },
+    "manager": {
+      "exclusive_components": [
+        "department_metrics",
+        "staff_performance_panel",
+        "quality_indicators",
+        "resource_utilization_chart",
+        "incident_report_panel"
+      ],
+      "primary_workflows": [
+        "monitor_team_performance",
+        "review_compliance",
+        "generate_reports",
+        "manage_resources"
+      ]
+    },
+    "admin": {
+      "exclusive_components": [
+        "system_health_monitor",
+        "user_management_grid",
+        "configuration_panel",
+        "integration_status",
+        "api_analytics"
+      ],
+      "primary_workflows": [
+        "manage_users",
+        "configure_system",
+        "monitor_performance",
+        "manage_integrations"
+      ]
+    },
+    "security": {
+      "exclusive_components": [
+        "threat_detection_panel",
+        "access_control_matrix",
+        "compliance_dashboard",
+        "incident_response_center",
+        "audit_trail_viewer"
+      ],
+      "primary_workflows": [
+        "monitor_security",
+        "investigate_incidents",
+        "manage_compliance",
+        "respond_to_threats"
+      ]
+    }
+  },
+  "shared_components": {
+    "cross_role_usage": {
+      "button": ["all_roles"],
+      "input": ["all_roles"],
+      "form_field": ["all_roles"],
+      "navigation": ["all_roles"],
+      "modal": ["all_roles"],
+      "data_table": ["clinical", "manager", "admin", "security"],
+      "chart": ["manager", "admin", "security"],
+      "calendar": ["patient", "clinical"],
+      "chat": ["patient", "clinical"]
+    }
+  },
+  "development_guidelines": {
+    "naming_conventions": {
+      "components": "PascalCase",
+      "files": "PascalCase.tsx",
+      "props": "camelCase",
+      "css_classes": "kebab-case"
+    },
+    "file_structure": {
+      "atoms": "src/components/atoms/",
+      "molecules": "src/components/molecules/",
+      "organisms": "src/components/organisms/",
+      "templates": "src/components/templates/",
+      "pages": "src/pages/"
+    },
+    "testing_strategy": {
+      "unit_tests": "Each component level",
+      "integration_tests": "Organism and template level",
+      "e2e_tests": "Complete page workflows",
+      "accessibility_tests": "All levels"
+    },
+    "performance_considerations": {
+      "code_splitting": "Page level",
+      "lazy_loading": "Organism level",
+      "memoization": "Complex molecules and organisms",
+      "bundle_optimization": "Tree shaking for unused components"
+    }
+  },
+  "ai_generation_metadata": {
+    "component_templates": {
+      "atom_template": {
+        "required_props": ["children or value", "onChange for inputs"],
+        "optional_props": ["className", "disabled", "error"],
+        "accessibility": ["aria-label", "role", "tabIndex"],
+        "testing": ["data-testid", "prop validation"]
+      },
+      "molecule_template": {
+        "composition": "2-5 atoms",
+        "state_management": "local useState or props",
+        "validation": "prop validation and error handling",
+        "responsive": "mobile-first approach"
+      },
+      "organism_template": {
+        "composition": "multiple molecules + atoms",
+        "state_management": "local state + API calls",
+        "data_fetching": "service integration",
+        "error_boundaries": "graceful error handling"
+      }
+    },
+    "generation_rules": {
+      "always_include": ["TypeScript interfaces", "accessibility attributes", "responsive design", "error states"],
+      "nhs_compliance": ["color palette", "typography", "spacing", "component patterns"],
+      "role_based_logic": ["permission checks", "role-specific data", "conditional rendering"],
+      "service_integration": ["API endpoints", "data transformation", "loading states"]
+    }
+  }
+}

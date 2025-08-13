@@ -1,0 +1,2589 @@
+openapi: 3.0.3
+info:
+  title: Occupational Health eHR API
+  description: |
+    Comprehensive API for Occupational Health Electronic Health Records system.
+    
+    This API provides endpoints for managing employee health profiles, appointments, 
+    documents, telemedicine sessions, messaging, and reporting in an occupational 
+    health context.
+    
+    ## Authentication
+    All endpoints require JWT Bearer token authentication unless specified otherwise.
+    
+    ## Rate Limiting
+    - General endpoints: 1000 requests per hour
+    - Authentication endpoints: 10 requests per minute
+    - File upload endpoints: 100 requests per hour
+    
+    ## Data Security
+    - All health data is encrypted at rest and in transit
+    - Access is controlled by role-based permissions
+    - Full audit logging is implemented for all operations
+    
+  version: 1.0.0
+  contact:
+    name: OH eHR API Support
+    email: api-support@oh-ehr.com
+    url: https://oh-ehr.com/api-docs
+  license:
+    name: Proprietary
+    url: https://oh-ehr.com/license
+
+servers:
+  - url: https://api.oh-ehr.com/v1
+    description: Production server
+  - url: https://staging-api.oh-ehr.com/v1
+    description: Staging server
+  - url: https://dev-api.oh-ehr.com/v1
+    description: Development server
+
+security:
+  - BearerAuth: []
+
+paths:
+  # ====================================
+  # AUTHENTICATION ENDPOINTS
+  # ====================================
+  /auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: User authentication
+      description: Authenticate user with username/email and password
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - password
+              properties:
+                username:
+                  type: string
+                  example: "john.smith@company.com"
+                password:
+                  type: string
+                  format: password
+                  example: "SecurePassword123!"
+                rememberMe:
+                  type: boolean
+                  default: false
+      responses:
+        '200':
+          description: Authentication successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  token:
+                    type: string
+                    description: JWT access token
+                  refreshToken:
+                    type: string
+                    description: JWT refresh token
+                  expiresIn:
+                    type: integer
+                    description: Token expiry time in seconds
+                  user:
+                    $ref: '#/components/schemas/UserProfile'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+  /auth/logout:
+    post:
+      tags:
+        - Authentication
+      summary: User logout
+      description: Invalidate current session and JWT token
+      responses:
+        '200':
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+
+  /auth/refresh:
+    post:
+      tags:
+        - Authentication
+      summary: Refresh JWT token
+      description: Get new access token using refresh token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - refreshToken
+              properties:
+                refreshToken:
+                  type: string
+      responses:
+        '200':
+          description: Token refreshed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                  expiresIn:
+                    type: integer
+
+  /auth/forgot-password:
+    post:
+      tags:
+        - Authentication
+      summary: Request password reset
+      description: Send password reset email to user
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: "john.smith@company.com"
+      responses:
+        '200':
+          description: Password reset email sent
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+
+  # ====================================
+  # EMPLOYEE PROFILE ENDPOINTS
+  # ====================================
+  /employees:
+    get:
+      tags:
+        - Employee Profiles
+      summary: Get employee list
+      description: Retrieve list of employees with optional filtering
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+            maximum: 100
+        - name: search
+          in: query
+          schema:
+            type: string
+          description: Search by name, email, or employee ID
+        - name: department
+          in: query
+          schema:
+            type: string
+          description: Filter by department
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [active, inactive, terminated]
+      responses:
+        '200':
+          description: List of employees
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Employee'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+
+    post:
+      tags:
+        - Employee Profiles
+      summary: Create new employee
+      description: Create a new employee profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateEmployeeRequest'
+      responses:
+        '201':
+          description: Employee created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/Employee'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /employees/{employeeId}:
+    get:
+      tags:
+        - Employee Profiles
+      summary: Get employee by ID
+      description: Retrieve detailed employee information
+      parameters:
+        - name: employeeId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Employee details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/EmployeeDetailed'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags:
+        - Employee Profiles
+      summary: Update employee
+      description: Update employee profile information
+      parameters:
+        - name: employeeId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateEmployeeRequest'
+      responses:
+        '200':
+          description: Employee updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/Employee'
+
+    delete:
+      tags:
+        - Employee Profiles
+      summary: Deactivate employee
+      description: Soft delete employee (set status to inactive)
+      parameters:
+        - name: employeeId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Employee deactivated successfully
+
+  /employees/{employeeId}/health-info:
+    get:
+      tags:
+        - Employee Profiles
+      summary: Get employee health information
+      description: Retrieve employee's health-related data
+      parameters:
+        - name: employeeId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Employee health information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/EmployeeHealthInfo'
+
+    put:
+      tags:
+        - Employee Profiles
+      summary: Update employee health information
+      description: Update employee's health-related data
+      parameters:
+        - name: employeeId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateHealthInfoRequest'
+      responses:
+        '200':
+          description: Health information updated successfully
+
+  # ====================================
+  # APPOINTMENT ENDPOINTS
+  # ====================================
+  /appointments:
+    get:
+      tags:
+        - Appointments
+      summary: Get appointments
+      description: Retrieve appointments with optional filtering
+      parameters:
+        - name: employeeId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: professionalId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [scheduled, confirmed, in_progress, completed, cancelled, no_show]
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [consultation, health_check, follow_up, emergency]
+      responses:
+        '200':
+          description: List of appointments
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Appointment'
+
+    post:
+      tags:
+        - Appointments
+      summary: Book new appointment
+      description: Create a new appointment booking
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAppointmentRequest'
+      responses:
+        '201':
+          description: Appointment booked successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/Appointment'
+
+  /appointments/{appointmentId}:
+    get:
+      tags:
+        - Appointments
+      summary: Get appointment details
+      description: Retrieve detailed appointment information
+      parameters:
+        - name: appointmentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Appointment details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/AppointmentDetailed'
+
+    put:
+      tags:
+        - Appointments
+      summary: Update appointment
+      description: Reschedule or modify appointment details
+      parameters:
+        - name: appointmentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAppointmentRequest'
+      responses:
+        '200':
+          description: Appointment updated successfully
+
+    delete:
+      tags:
+        - Appointments
+      summary: Cancel appointment
+      description: Cancel an existing appointment
+      parameters:
+        - name: appointmentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Appointment cancelled successfully
+
+  /appointments/availability:
+    get:
+      tags:
+        - Appointments
+      summary: Get available time slots
+      description: Retrieve available appointment slots for booking
+      parameters:
+        - name: professionalId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: startDate
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: appointmentType
+          in: query
+          schema:
+            type: string
+        - name: duration
+          in: query
+          schema:
+            type: integer
+            description: Appointment duration in minutes
+      responses:
+        '200':
+          description: Available time slots
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TimeSlot'
+
+  # ====================================
+  # DOCUMENT ENDPOINTS
+  # ====================================
+  /documents:
+    get:
+      tags:
+        - Documents
+      summary: Get documents
+      description: Retrieve documents with optional filtering
+      parameters:
+        - name: employeeId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [health_certificate, medical_report, form, image, other]
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+      responses:
+        '200':
+          description: List of documents
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Document'
+
+    post:
+      tags:
+        - Documents
+      summary: Upload document
+      description: Upload a new document
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+                - employeeId
+                - documentType
+              properties:
+                file:
+                  type: string
+                  format: binary
+                employeeId:
+                  type: string
+                  format: uuid
+                documentType:
+                  type: string
+                  enum: [health_certificate, medical_report, form, image, other]
+                documentName:
+                  type: string
+                description:
+                  type: string
+                accessLevel:
+                  type: string
+                  enum: [private, shared, public]
+                  default: private
+      responses:
+        '201':
+          description: Document uploaded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/Document'
+
+  /documents/{documentId}:
+    get:
+      tags:
+        - Documents
+      summary: Get document metadata
+      description: Retrieve document information and metadata
+      parameters:
+        - name: documentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Document metadata
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/DocumentDetailed'
+
+    put:
+      tags:
+        - Documents
+      summary: Update document metadata
+      description: Update document information and metadata
+      parameters:
+        - name: documentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateDocumentRequest'
+      responses:
+        '200':
+          description: Document updated successfully
+
+    delete:
+      tags:
+        - Documents
+      summary: Delete document
+      description: Delete a document (soft delete)
+      parameters:
+        - name: documentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Document deleted successfully
+
+  /documents/{documentId}/download:
+    get:
+      tags:
+        - Documents
+      summary: Download document
+      description: Download document file
+      parameters:
+        - name: documentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Document file
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /documents/{documentId}/share:
+    post:
+      tags:
+        - Documents
+      summary: Share document
+      description: Share document with other users
+      parameters:
+        - name: documentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - sharedWith
+                - permissionType
+              properties:
+                sharedWith:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+                permissionType:
+                  type: string
+                  enum: [view, download, edit]
+                expiresAt:
+                  type: string
+                  format: date-time
+      responses:
+        '200':
+          description: Document shared successfully
+
+  # ====================================
+  # TELEMEDICINE ENDPOINTS
+  # ====================================
+  /video-sessions:
+    get:
+      tags:
+        - Telemedicine
+      summary: Get video sessions
+      description: Retrieve video sessions with optional filtering
+      parameters:
+        - name: appointmentId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [waiting, active, ended, failed]
+      responses:
+        '200':
+          description: List of video sessions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/VideoSession'
+
+    post:
+      tags:
+        - Telemedicine
+      summary: Create video session
+      description: Create a new video session for appointment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateVideoSessionRequest'
+      responses:
+        '201':
+          description: Video session created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/VideoSession'
+
+  /video-sessions/{sessionId}:
+    get:
+      tags:
+        - Telemedicine
+      summary: Get video session details
+      description: Retrieve detailed video session information
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Video session details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/VideoSessionDetailed'
+
+    put:
+      tags:
+        - Telemedicine
+      summary: Update video session
+      description: Update video session status or configuration
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateVideoSessionRequest'
+      responses:
+        '200':
+          description: Video session updated successfully
+
+  /video-sessions/{sessionId}/join:
+    post:
+      tags:
+        - Telemedicine
+      summary: Join video session
+      description: Join an existing video session
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Session join information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      sessionUrl:
+                        type: string
+                      accessToken:
+                        type: string
+                      participantId:
+                        type: string
+
+  /video-sessions/{sessionId}/end:
+    post:
+      tags:
+        - Telemedicine
+      summary: End video session
+      description: End an active video session
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Video session ended successfully
+
+  # ====================================
+  # MESSAGING ENDPOINTS
+  # ====================================
+  /conversations:
+    get:
+      tags:
+        - Messaging
+      summary: Get conversations
+      description: Retrieve user's conversations
+      parameters:
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [direct, group, broadcast]
+      responses:
+        '200':
+          description: List of conversations
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Conversation'
+
+    post:
+      tags:
+        - Messaging
+      summary: Create conversation
+      description: Create a new conversation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateConversationRequest'
+      responses:
+        '201':
+          description: Conversation created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/Conversation'
+
+  /conversations/{conversationId}/messages:
+    get:
+      tags:
+        - Messaging
+      summary: Get conversation messages
+      description: Retrieve messages in a conversation
+      parameters:
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+      responses:
+        '200':
+          description: List of messages
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Message'
+
+    post:
+      tags:
+        - Messaging
+      summary: Send message
+      description: Send a new message in conversation
+      parameters:
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendMessageRequest'
+      responses:
+        '201':
+          description: Message sent successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/Message'
+
+  # ====================================
+  # REPORTING ENDPOINTS
+  # ====================================
+  /reports:
+    get:
+      tags:
+        - Reporting
+      summary: Get available reports
+      description: Retrieve list of available reports
+      parameters:
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [employee_health, appointment_summary, document_access, compliance]
+      responses:
+        '200':
+          description: List of available reports
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Report'
+
+    post:
+      tags:
+        - Reporting
+      summary: Generate report
+      description: Generate a new report
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenerateReportRequest'
+      responses:
+        '201':
+          description: Report generation started
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/ReportExecution'
+
+  /reports/{reportId}/executions/{executionId}:
+    get:
+      tags:
+        - Reporting
+      summary: Get report execution status
+      description: Check status of report generation
+      parameters:
+        - name: reportId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: executionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Report execution status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/ReportExecution'
+
+  /reports/{reportId}/executions/{executionId}/download:
+    get:
+      tags:
+        - Reporting
+      summary: Download generated report
+      description: Download completed report file
+      parameters:
+        - name: reportId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: executionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: format
+          in: query
+          schema:
+            type: string
+            enum: [pdf, excel, csv]
+            default: pdf
+      responses:
+        '200':
+          description: Report file
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+
+  # ====================================
+  # AUDIT ENDPOINTS
+  # ====================================
+  /audit-logs:
+    get:
+      tags:
+        - Audit & Compliance
+      summary: Get audit logs
+      description: Retrieve system audit logs
+      parameters:
+        - name: userId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: entityType
+          in: query
+          schema:
+            type: string
+        - name: action
+          in: query
+          schema:
+            type: string
+            enum: [create, read, update, delete, login, logout]
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+      responses:
+        '200':
+          description: List of audit logs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AuditLog'
+
+  /compliance/reports:
+    get:
+      tags:
+        - Audit & Compliance
+      summary: Get compliance reports
+      description: Retrieve compliance status reports
+      parameters:
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [gdpr, health_surveillance, data_access]
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Compliance reports
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/ComplianceReport'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    RateLimited:
+      description: Rate limit exceeded
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+  schemas:
+    # ====================================
+    # CORE SCHEMAS
+    # ====================================
+    Error:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              example: "VALIDATION_ERROR"
+            message:
+              type: string
+              example: "Invalid input data"
+            details:
+              type: array
+              items:
+                type: string
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+          example: 1
+        limit:
+          type: integer
+          example: 20
+        total:
+          type: integer
+          example: 157
+        totalPages:
+          type: integer
+          example: 8
+
+    UserProfile:
+      type: object
+      properties:
+        userId:
+          type: string
+          format: uuid
+        employeeNumber:
+          type: string
+          example: "EMP001"
+        title:
+          type: string
+          example: "Mr."
+        firstName:
+          type: string
+          example: "John"
+        lastName:
+          type: string
+          example: "Smith"
+        email:
+          type: string
+          format: email
+          example: "john.smith@company.com"
+        phoneNumber:
+          type: string
+          example: "+44 7123 456789"
+        department:
+          type: string
+          example: "Engineering"
+        jobTitle:
+          type: string
+          example: "Software Engineer"
+        startDate:
+          type: string
+          format: date
+          example: "2020-01-15"
+        employmentStatus:
+          type: string
+          enum: [active, inactive, terminated]
+          example: "active"
+        userType:
+          type: string
+          enum: [employee, oh_professional, manager, admin]
+        permissions:
+          type: array
+          items:
+            type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    # ====================================
+    # EMPLOYEE SCHEMAS
+    # ====================================
+    Employee:
+      type: object
+      properties:
+        employeeId:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        employeeNumber:
+          type: string
+          example: "EMP001"
+        title:
+          type: string
+          example: "Mr."
+        firstName:
+          type: string
+          example: "John"
+        lastName:
+          type: string
+          example: "Smith"
+        email:
+          type: string
+          format: email
+          example: "john.smith@company.com"
+        phoneNumber:
+          type: string
+          example: "+44 7123 456789"
+        department:
+          type: string
+          example: "Engineering"
+        jobTitle:
+          type: string
+          example: "Software Engineer"
+        startDate:
+          type: string
+          format: date
+          example: "2020-01-15"
+        employmentStatus:
+          type: string
+          enum: [active, inactive, terminated]
+          example: "active"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    EmployeeDetailed:
+      allOf:
+        - $ref: '#/components/schemas/Employee'
+        - type: object
+          properties:
+            dateOfBirth:
+              type: string
+              format: date
+              example: "1990-05-15"
+            gender:
+              type: string
+              enum: [male, female, other, prefer_not_to_say]
+            address:
+              type: string
+              example: "123 Main Street, London, UK"
+            postcode:
+              type: string
+              example: "SW1A 1AA"
+            emergencyContactName:
+              type: string
+              example: "Sarah Smith"
+            emergencyContactPhone:
+              type: string
+              example: "+44 7987 654321"
+            emergencyContactRelationship:
+              type: string
+              example: "Spouse"
+            healthInfo:
+              $ref: '#/components/schemas/EmployeeHealthInfo'
+            employmentHistory:
+              type: array
+              items:
+                $ref: '#/components/schemas/EmploymentHistory'
+
+    EmployeeHealthInfo:
+      type: object
+      properties:
+        healthInfoId:
+          type: string
+          format: uuid
+        nhsNumber:
+          type: string
+          example: "123 456 7890"
+        gpName:
+          type: string
+          example: "Dr. James Wilson"
+        gpAddress:
+          type: string
+          example: "London Medical Centre, 456 Health Street, London"
+        medicalConditions:
+          type: array
+          items:
+            type: object
+            properties:
+              condition:
+                type: string
+                example: "Hypertension"
+              status:
+                type: string
+                enum: [active, controlled, resolved]
+              diagnosedDate:
+                type: string
+                format: date
+        allergies:
+          type: array
+          items:
+            type: object
+            properties:
+              allergen:
+                type: string
+                example: "Penicillin"
+              severity:
+                type: string
+                enum: [mild, moderate, severe]
+              reaction:
+                type: string
+                example: "Skin rash"
+        medications:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                example: "Lisinopril"
+              dosage:
+                type: string
+                example: "10mg"
+              frequency:
+                type: string
+                example: "Once daily"
+              startDate:
+                type: string
+                format: date
+        bloodGroup:
+          type: string
+          enum: [A+, A-, B+, B-, AB+, AB-, O+, O-, unknown]
+          example: "O+"
+        healthNotes:
+          type: string
+          example: "Patient reports feeling well. Regular exercise routine."
+        lastUpdated:
+          type: string
+          format: date-time
+
+    EmploymentHistory:
+      type: object
+      properties:
+        employmentId:
+          type: string
+          format: uuid
+        department:
+          type: string
+          example: "Engineering"
+        jobTitle:
+          type: string
+          example: "Senior Software Engineer"
+        managerName:
+          type: string
+          example: "Rebecca Martinez"
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+          nullable: true
+        jobDescription:
+          type: string
+        riskFactors:
+          type: array
+          items:
+            type: object
+            properties:
+              factor:
+                type: string
+                example: "Computer work"
+              level:
+                type: string
+                enum: [low, medium, high]
+              description:
+                type: string
+
+    CreateEmployeeRequest:
+      type: object
+      required:
+        - firstName
+        - lastName
+        - email
+        - employeeNumber
+        - department
+        - jobTitle
+        - startDate
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+          format: email
+        employeeNumber:
+          type: string
+        title:
+          type: string
+        phoneNumber:
+          type: string
+        department:
+          type: string
+        jobTitle:
+          type: string
+        startDate:
+          type: string
+          format: date
+        dateOfBirth:
+          type: string
+          format: date
+        gender:
+          type: string
+          enum: [male, female, other, prefer_not_to_say]
+        address:
+          type: string
+        postcode:
+          type: string
+
+    UpdateEmployeeRequest:
+      type: object
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        phoneNumber:
+          type: string
+        department:
+          type: string
+        jobTitle:
+          type: string
+        address:
+          type: string
+        postcode:
+          type: string
+        emergencyContactName:
+          type: string
+        emergencyContactPhone:
+          type: string
+        emergencyContactRelationship:
+          type: string
+
+    UpdateHealthInfoRequest:
+      type: object
+      properties:
+        nhsNumber:
+          type: string
+        gpName:
+          type: string
+        gpAddress:
+          type: string
+        medicalConditions:
+          type: array
+          items:
+            type: object
+            properties:
+              condition:
+                type: string
+              status:
+                type: string
+              diagnosedDate:
+                type: string
+                format: date
+        allergies:
+          type: array
+          items:
+            type: object
+            properties:
+              allergen:
+                type: string
+              severity:
+                type: string
+              reaction:
+                type: string
+        medications:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              dosage:
+                type: string
+              frequency:
+                type: string
+              startDate:
+                type: string
+                format: date
+        bloodGroup:
+          type: string
+          enum: [A+, A-, B+, B-, AB+, AB-, O+, O-, unknown]
+        healthNotes:
+          type: string
+
+    # ====================================
+    # APPOINTMENT SCHEMAS
+    # ====================================
+    Appointment:
+      type: object
+      properties:
+        appointmentId:
+          type: string
+          format: uuid
+        employeeId:
+          type: string
+          format: uuid
+        ohProfessionalId:
+          type: string
+          format: uuid
+        appointmentType:
+          type: string
+          enum: [consultation, health_check, follow_up, emergency]
+        appointmentMode:
+          type: string
+          enum: [in_person, virtual, phone]
+        scheduledDate:
+          type: string
+          format: date-time
+        durationMinutes:
+          type: integer
+          example: 30
+        status:
+          type: string
+          enum: [scheduled, confirmed, in_progress, completed, cancelled, no_show]
+        location:
+          type: string
+          example: "Room 101, Health Centre"
+        virtualMeetingUrl:
+          type: string
+          format: uri
+          nullable: true
+        reason:
+          type: string
+          example: "Annual health check"
+        notes:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    AppointmentDetailed:
+      allOf:
+        - $ref: '#/components/schemas/Appointment'
+        - type: object
+          properties:
+            employee:
+              $ref: '#/components/schemas/Employee'
+            ohProfessional:
+              $ref: '#/components/schemas/OHProfessional'
+            reminders:
+              type: array
+              items:
+                $ref: '#/components/schemas/AppointmentReminder'
+            videoSession:
+              $ref: '#/components/schemas/VideoSession'
+              nullable: true
+
+    OHProfessional:
+      type: object
+      properties:
+        professionalId:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        firstName:
+          type: string
+        lastName:
+          type: string
+        registrationNumber:
+          type: string
+          example: "GMC123456"
+        specialization:
+          type: string
+          example: "Occupational Medicine"
+        qualifications:
+          type: array
+          items:
+            type: object
+            properties:
+              qualification:
+                type: string
+              institution:
+                type: string
+              year:
+                type: integer
+        workingHours:
+          type: object
+          properties:
+            monday:
+              type: object
+              properties:
+                start:
+                  type: string
+                  example: "09:00"
+                end:
+                  type: string
+                  example: "17:00"
+        isAvailable:
+          type: boolean
+
+    TimeSlot:
+      type: object
+      properties:
+        startTime:
+          type: string
+          format: date-time
+        endTime:
+          type: string
+          format: date-time
+        available:
+          type: boolean
+        professionalId:
+          type: string
+          format: uuid
+        professionalName:
+          type: string
+
+    CreateAppointmentRequest:
+      type: object
+      required:
+        - employeeId
+        - appointmentType
+        - appointmentMode
+        - scheduledDate
+        - durationMinutes
+      properties:
+        employeeId:
+          type: string
+          format: uuid
+        ohProfessionalId:
+          type: string
+          format: uuid
+        appointmentType:
+          type: string
+          enum: [consultation, health_check, follow_up, emergency]
+        appointmentMode:
+          type: string
+          enum: [in_person, virtual, phone]
+        scheduledDate:
+          type: string
+          format: date-time
+        durationMinutes:
+          type: integer
+        reason:
+          type: string
+        location:
+          type: string
+        sendReminders:
+          type: boolean
+          default: true
+
+    UpdateAppointmentRequest:
+      type: object
+      properties:
+        scheduledDate:
+          type: string
+          format: date-time
+        durationMinutes:
+          type: integer
+        status:
+          type: string
+          enum: [scheduled, confirmed, in_progress, completed, cancelled, no_show]
+        location:
+          type: string
+        reason:
+          type: string
+        notes:
+          type: string
+
+    AppointmentReminder:
+      type: object
+      properties:
+        reminderId:
+          type: string
+          format: uuid
+        reminderType:
+          type: string
+          enum: [email, sms, push]
+        hoursBefore:
+          type: integer
+        status:
+          type: string
+          enum: [pending, sent, failed]
+        sentAt:
+          type: string
+          format: date-time
+          nullable: true
+
+    # ====================================
+    # DOCUMENT SCHEMAS
+    # ====================================
+    Document:
+      type: object
+      properties:
+        documentId:
+          type: string
+          format: uuid
+        employeeId:
+          type: string
+          format: uuid
+        documentName:
+          type: string
+          example: "Annual Health Certificate"
+        documentType:
+          type: string
+          enum: [health_certificate, medical_report, form, image, other]
+        fileName:
+          type: string
+          example: "health_cert_2024.pdf"
+        mimeType:
+          type: string
+          example: "application/pdf"
+        fileSize:
+          type: integer
+          example: 2048576
+        filePath:
+          type: string
+        fileHash:
+          type: string
+          description: "SHA-256 hash of file content"
+        accessLevel:
+          type: string
+          enum: [private, shared, public]
+        metadata:
+          type: object
+          properties:
+            description:
+              type: string
+            tags:
+              type: array
+              items:
+                type: string
+            category:
+              type: string
+        uploadedBy:
+          type: string
+          format: uuid
+        uploadedAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    DocumentDetailed:
+      allOf:
+        - $ref: '#/components/schemas/Document'
+        - type: object
+          properties:
+            versions:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentVersion'
+            shares:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentShare'
+            employee:
+              $ref: '#/components/schemas/Employee'
+            uploader:
+              $ref: '#/components/schemas/UserProfile'
+
+    DocumentVersion:
+      type: object
+      properties:
+        versionId:
+          type: string
+          format: uuid
+        versionNumber:
+          type: integer
+        filePath:
+          type: string
+        fileSize:
+          type: integer
+        fileHash:
+          type: string
+        changeNotes:
+          type: string
+        createdBy:
+          type: string
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+
+    DocumentShare:
+      type: object
+      properties:
+        shareId:
+          type: string
+          format: uuid
+        sharedWith:
+          type: string
+          format: uuid
+        sharedBy:
+          type: string
+          format: uuid
+        permissionType:
+          type: string
+          enum: [view, download, edit]
+        sharedAt:
+          type: string
+          format: date-time
+        expiresAt:
+          type: string
+          format: date-time
+          nullable: true
+
+    UpdateDocumentRequest:
+      type: object
+      properties:
+        documentName:
+          type: string
+        documentType:
+          type: string
+          enum: [health_certificate, medical_report, form, image, other]
+        accessLevel:
+          type: string
+          enum: [private, shared, public]
+        metadata:
+          type: object
+          properties:
+            description:
+              type: string
+            tags:
+              type: array
+              items:
+                type: string
+            category:
+              type: string
+
+    # ====================================
+    # TELEMEDICINE SCHEMAS
+    # ====================================
+    VideoSession:
+      type: object
+      properties:
+        sessionId:
+          type: string
+          format: uuid
+        appointmentId:
+          type: string
+          format: uuid
+        meetingRoomId:
+          type: string
+          example: "room_abc123"
+        sessionUrl:
+          type: string
+          format: uri
+        startedAt:
+          type: string
+          format: date-time
+          nullable: true
+        endedAt:
+          type: string
+          format: date-time
+          nullable: true
+        durationSeconds:
+          type: integer
+          nullable: true
+        status:
+          type: string
+          enum: [waiting, active, ended, failed]
+        sessionConfig:
+          type: object
+          properties:
+            recordSession:
+              type: boolean
+            allowScreenShare:
+              type: boolean
+            maxParticipants:
+              type: integer
+        createdAt:
+          type: string
+          format: date-time
+
+    VideoSessionDetailed:
+      allOf:
+        - $ref: '#/components/schemas/VideoSession'
+        - type: object
+          properties:
+            participants:
+              type: array
+              items:
+                $ref: '#/components/schemas/SessionParticipant'
+            recordings:
+              type: array
+              items:
+                $ref: '#/components/schemas/SessionRecording'
+            appointment:
+              $ref: '#/components/schemas/Appointment'
+
+    SessionParticipant:
+      type: object
+      properties:
+        participantId:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        joinedAt:
+          type: string
+          format: date-time
+        leftAt:
+          type: string
+          format: date-time
+          nullable: true
+        role:
+          type: string
+          enum: [host, participant, observer]
+        connectionInfo:
+          type: object
+          properties:
+            userAgent:
+              type: string
+            ipAddress:
+              type: string
+            quality:
+              type: string
+              enum: [poor, fair, good, excellent]
+
+    SessionRecording:
+      type: object
+      properties:
+        recordingId:
+          type: string
+          format: uuid
+        recordingPath:
+          type: string
+        fileSize:
+          type: integer
+        durationSeconds:
+          type: integer
+        status:
+          type: string
+          enum: [processing, available, deleted]
+        transcript:
+          type: object
+          properties:
+            text:
+              type: string
+            confidence:
+              type: number
+              format: float
+        consentObtained:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        deletedAt:
+          type: string
+          format: date-time
+          nullable: true
+
+    CreateVideoSessionRequest:
+      type: object
+      required:
+        - appointmentId
+      properties:
+        appointmentId:
+          type: string
+          format: uuid
+        sessionConfig:
+          type: object
+          properties:
+            recordSession:
+              type: boolean
+              default: false
+            allowScreenShare:
+              type: boolean
+              default: true
+            maxParticipants:
+              type: integer
+              default: 10
+
+    UpdateVideoSessionRequest:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [waiting, active, ended, failed]
+        sessionConfig:
+          type: object
+          properties:
+            recordSession:
+              type: boolean
+            allowScreenShare:
+              type: boolean
+
+    # ====================================
+    # MESSAGING SCHEMAS
+    # ====================================
+    Conversation:
+      type: object
+      properties:
+        conversationId:
+          type: string
+          format: uuid
+        conversationName:
+          type: string
+          example: "Health Consultation - John Smith"
+        conversationType:
+          type: string
+          enum: [direct, group, broadcast]
+        metadata:
+          type: object
+          properties:
+            relatedAppointmentId:
+              type: string
+              format: uuid
+            relatedEmployeeId:
+              type: string
+              format: uuid
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        createdBy:
+          type: string
+          format: uuid
+        lastMessage:
+          $ref: '#/components/schemas/Message'
+          nullable: true
+        unreadCount:
+          type: integer
+
+    Message:
+      type: object
+      properties:
+        messageId:
+          type: string
+          format: uuid
+        conversationId:
+          type: string
+          format: uuid
+        senderId:
+          type: string
+          format: uuid
+        messageContent:
+          type: string
+        messageType:
+          type: string
+          enum: [text, file, image, system]
+        replyToMessageId:
+          type: string
+          format: uuid
+          nullable: true
+        attachments:
+          type: array
+          items:
+            type: object
+            properties:
+              fileName:
+                type: string
+              fileUrl:
+                type: string
+              fileSize:
+                type: integer
+              mimeType:
+                type: string
+        isDeleted:
+          type: boolean
+        sentAt:
+          type: string
+          format: date-time
+        editedAt:
+          type: string
+          format: date-time
+          nullable: true
+        readBy:
+          type: array
+          items:
+            type: object
+            properties:
+              userId:
+                type: string
+                format: uuid
+              readAt:
+                type: string
+                format: date-time
+
+    CreateConversationRequest:
+      type: object
+      required:
+        - conversationType
+        - participants
+      properties:
+        conversationName:
+          type: string
+        conversationType:
+          type: string
+          enum: [direct, group, broadcast]
+        participants:
+          type: array
+          items:
+            type: string
+            format: uuid
+        metadata:
+          type: object
+
+    SendMessageRequest:
+      type: object
+      required:
+        - messageContent
+        - messageType
+      properties:
+        messageContent:
+          type: string
+        messageType:
+          type: string
+          enum: [text, file, image, system]
+        replyToMessageId:
+          type: string
+          format: uuid
+        attachments:
+          type: array
+          items:
+            type: object
+            properties:
+              fileName:
+                type: string
+              fileUrl:
+                type: string
+              fileSize:
+                type: integer
+              mimeType:
+                type: string
+
+    # ====================================
+    # REPORTING SCHEMAS
+    # ====================================
+    Report:
+      type: object
+      properties:
+        reportId:
+          type: string
+          format: uuid
+        reportName:
+          type: string
+          example: "Monthly Health Summary"
+        reportType:
+          type: string
+          enum: [employee_health, appointment_summary, document_access, compliance]
+        reportConfig:
+          type: object
+          properties:
+            dateRange:
+              type: object
+              properties:
+                startDate:
+                  type: string
+                  format: date
+                endDate:
+                  type: string
+                  format: date
+            filters:
+              type: object
+            groupBy:
+              type: array
+              items:
+                type: string
+        filters:
+          type: object
+        createdBy:
+          type: string
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+        lastRun:
+          type: string
+          format: date-time
+          nullable: true
+
+    ReportExecution:
+      type: object
+      properties:
+        executionId:
+          type: string
+          format: uuid
+        reportId:
+          type: string
+          format: uuid
+        outputPath:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum: [running, completed, failed]
+        executionLog:
+          type: object
+          properties:
+            startTime:
+              type: string
+              format: date-time
+            endTime:
+              type: string
+              format: date-time
+            recordsProcessed:
+              type: integer
+            errors:
+              type: array
+              items:
+                type: string
+        startedAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: string
+          format: date-time
+          nullable: true
+
+    GenerateReportRequest:
+      type: object
+      required:
+        - reportType
+        - reportConfig
+      properties:
+        reportName:
+          type: string
+        reportType:
+          type: string
+          enum: [employee_health, appointment_summary, document_access, compliance]
+        reportConfig:
+          type: object
+          properties:
+            dateRange:
+              type: object
+              required:
+                - startDate
+                - endDate
+              properties:
+                startDate:
+                  type: string
+                  format: date
+                endDate:
+                  type: string
+                  format: date
+            filters:
+              type: object
+              properties:
+                departments:
+                  type: array
+                  items:
+                    type: string
+                employeeIds:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+                includeHealthData:
+                  type: boolean
+            format:
+              type: string
+              enum: [pdf, excel, csv]
+              default: pdf
+
+    # ====================================
+    # AUDIT SCHEMAS
+    # ====================================
+    AuditLog:
+      type: object
+      properties:
+        auditId:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        entityType:
+          type: string
+          example: "Employee"
+        entityId:
+          type: string
+          format: uuid
+        action:
+          type: string
+          enum: [create, read, update, delete, login, logout]
+        oldValues:
+          type: object
+          nullable: true
+        newValues:
+          type: object
+          nullable: true
+        ipAddress:
+          type: string
+          example: "192.168.1.100"
+        userAgent:
+          type: string
+          example: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+        createdAt:
+          type: string
+          format: date-time
+
+    ComplianceReport:
+      type: object
+      properties:
+        reportId:
+          type: string
+          format: uuid
+        reportType:
+          type: string
+          enum: [gdpr, health_surveillance, data_access]
+        reportPeriod:
+          type: object
+          properties:
+            startDate:
+              type: string
+              format: date
+            endDate:
+              type: string
+              format: date
+        metrics:
+          type: object
+          properties:
+            totalEmployees:
+              type: integer
+            compliantEmployees:
+              type: integer
+            complianceRate:
+              type: number
+              format: float
+            outstandingActions:
+              type: integer
+        details:
+          type: object
+          properties:
+            gdprCompliance:
+              type: object
+              properties:
+                consentRecords:
+                  type: integer
+                dataRequests:
+                  type: integer
+                breachIncidents:
+                  type: integer
+            healthSurveillance:
+              type: object
+              properties:
+                dueSurveillances:
+                  type: integer
+                completedSurveillances:
+                  type: integer
+                overdueSurveillances:
+                  type: integer
+        generatedAt:
+          type: string
+          format: date-time
