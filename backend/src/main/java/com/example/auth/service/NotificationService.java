@@ -3,6 +3,7 @@ package com.example.auth.service;
 import com.example.auth.model.Appointment;
 import com.example.auth.model.Notification;
 import com.example.auth.model.NotificationStatus;
+import com.example.auth.model.User;
 import com.example.auth.model.NotificationType;
 import com.example.auth.repository.NotificationRepository;
 import org.slf4j.Logger;
@@ -33,5 +34,17 @@ public class NotificationService {
         notificationRepository.save(reminder);
 
         logger.info("Scheduled a 24-hour reminder for appointment ID: {}", appointment.getAppointmentId());
+    }
+
+    @Transactional
+    public void createNotification(User user, String title, String message, NotificationType type) {
+        Notification notification = new Notification();
+        notification.setUser(user);
+        notification.setTitle(title);
+        notification.setMessage(message);
+        notification.setNotificationType(type);
+        notification.setStatus(NotificationStatus.PENDING);
+        notificationRepository.save(notification);
+        logger.info("Created {} notification for user {}: {}", type, user.getUserId(), title);
     }
 }

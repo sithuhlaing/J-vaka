@@ -1,8 +1,12 @@
 package com.example.auth.controller;
 
 import com.example.auth.model.Conversation;
+import com.example.auth.model.ConversationParticipant;
 import com.example.auth.model.User;
+import com.example.auth.repository.ConversationParticipantRepository;
 import com.example.auth.repository.ConversationRepository;
+import com.example.auth.repository.MessageReadRepository;
+import com.example.auth.repository.MessageRepository;
 import com.example.auth.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,10 +19,10 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -39,6 +43,18 @@ public class MessagingControllerIntegrationTest {
     @Autowired
     private ConversationRepository conversationRepository;
 
+    @Autowired
+    private MessageRepository messageRepository;
+
+    @Autowired
+    private MessageReadRepository messageReadRepository;
+
+    @Autowired
+    private ConversationParticipantRepository conversationParticipantRepository;
+
+    @Autowired
+    private com.example.auth.repository.NotificationRepository notificationRepository;
+
     private User user1;
     private User user2;
     private Conversation conversation;
@@ -53,6 +69,10 @@ public class MessagingControllerIntegrationTest {
         conversation = new Conversation();
         conversation.setCreatedBy(user1);
         conversationRepository.save(conversation);
+
+        // Add participants
+        conversationParticipantRepository.save(new ConversationParticipant(conversation, user1));
+        conversationParticipantRepository.save(new ConversationParticipant(conversation, user2));
     }
 
     @Test
@@ -71,6 +91,13 @@ public class MessagingControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.messageId").exists())
                 .andExpect(jsonPath("$.messageContent").value("Hello, world!"));
+
+        // Verify that a notification was created for user2
+        List<com.example.auth.model.Notification> notifications = notificationRepository.findAll();
+        assertTrue(notifications.stream().anyMatch(n ->
+                n.getUser().getUserId().equals(user2.getUserId()) &&
+                n.getNotificationType() == com.example.auth.model.NotificationType.MESSAGE_ALERT
+        ));
     }
 
     @Test
@@ -133,5 +160,41 @@ public class MessagingControllerIntegrationTest {
         mockMvc.perform(get("/api/messaging/conversation/" + conversation.getConversationId()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[?(@.messageId == '%s')]", sentMessage.getMessageId()).doesNotExist());
+    }
+
+    @Test
+    @WithMockUser("msg-user2")
+    public void whenMarkMessageAsRead_thenCreatesReadReceipt() throws Exception {
+        // 1. user1 sends a message (created directly)
+        com.example.auth.model.Message message = new com.example.auth.model.Message(conversation, user1, "A message to be read", com.example.auth.model.MessageType.TEXT);
+        messageRepository.save(message);
+
+        // 2. user2 (the mock user) marks it as read
+        mockMvc.perform(post("/api/messaging/" + message.getMessageId() + "/read"))
+                .andExpect(status().isOk());
+
+        // 3. Verify the read receipt was created
+        // We need to fetch the user object that's attached to the current persistence context
+        User user2InContext = userRepository.findByUsername("msg-user2").get();
+        assertTrue(messageReadRepository.existsByMessageAndUser(message, user2InContext));
+    }
+
+    @Test
+    @WithMockUser("msg-user2")
+    public void whenGetUnreadCount_thenReturnsCorrectCount() throws Exception {
+        // 1. user1 sends two messages
+        messageRepository.save(new com.example.auth.model.Message(conversation, user1, "Message 1 from user1", com.example.auth.model.MessageType.TEXT));
+        com.example.auth.model.Message message2 = messageRepository.save(new com.example.auth.model.Message(conversation, user1, "Message 2 from user1", com.example.auth.model.MessageType.TEXT));
+
+        // 2. user2 sends one message
+        messageRepository.save(new com.example.auth.model.Message(conversation, user2, "Message from user2", com.example.auth.model.MessageType.TEXT));
+
+        // 3. user2 reads one of the messages from user1
+        messageReadRepository.save(new com.example.auth.model.MessageRead(message2, user2));
+
+        // 4. Get unread count for user2
+        mockMvc.perform(get("/api/messaging/conversation/" + conversation.getConversationId() + "/unread-count"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").value(1));
     }
 }

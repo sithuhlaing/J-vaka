@@ -41,4 +41,7 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
     
     @Query("SELECT COUNT(m) FROM Message m WHERE m.conversation = :conversation AND m.isDeleted = false")
     Long countActiveMessagesByConversation(Conversation conversation);
+
+    @Query("SELECT COUNT(m) FROM Message m WHERE m.conversation = :conversation AND m.sender <> :user AND m.isDeleted = false AND NOT EXISTS (SELECT 1 FROM MessageRead mr WHERE mr.message = m AND mr.user = :user)")
+    Long countUnreadMessagesForUser(@org.springframework.data.repository.query.Param("conversation") Conversation conversation, @org.springframework.data.repository.query.Param("user") User user);
 }

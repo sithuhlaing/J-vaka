@@ -54,4 +54,20 @@ public class MessagingController {
         messagingService.deleteMessage(messageId, currentUser);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/{messageId}/read")
+    public ResponseEntity<Void> markMessageAsRead(@PathVariable UUID messageId, Authentication authentication) {
+        User currentUser = userRepository.findByUsername(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        messagingService.markMessageAsRead(messageId, currentUser);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/conversation/{conversationId}/unread-count")
+    public ResponseEntity<Long> getUnreadMessageCount(@PathVariable UUID conversationId, Authentication authentication) {
+        User currentUser = userRepository.findByUsername(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        long count = messagingService.getUnreadMessageCount(conversationId, currentUser);
+        return ResponseEntity.ok(count);
+    }
 }
