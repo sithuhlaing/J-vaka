@@ -3,8 +3,7 @@
 import type React from "react"
 import { useState, useEffect } from "react"
 import { useRouter, usePathname } from "next/navigation"
-import { Calendar, FileText, MessageSquare, Home, Users, BarChart3, Shield, Menu, ChevronDown } from "lucide-react"
-import type { UserData } from "@/lib/mock-data"
+import { Calendar, FileText, MessageSquare, Home, Users, BarChart3, Shield, Menu, ChevronDown, FormInput } from "lucide-react"
 import { useAuthStore } from "@/lib/state/auth-store"
 import { cn } from "@/lib/utils"
 import { ProfileSettingsPanel } from "@/components/ui/profile-settings-panel"
@@ -73,6 +72,13 @@ export function MainLayout({ children }: MainLayoutProps) {
 
     if (user.role === "manager") {
       baseItems.push({ icon: BarChart3, label: "Reports", href: "/manager/reports" })
+    }
+
+    if (user.role === "oh_professional") {
+      baseItems.push(
+        { icon: Users, label: "Patients", href: "/oh/patients" },
+        { icon: FormInput, label: "Form Builder", href: "/oh/forms" }
+      )
     }
 
     if (user.role === "admin") {
