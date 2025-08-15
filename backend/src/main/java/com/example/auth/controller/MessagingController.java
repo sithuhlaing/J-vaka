@@ -38,4 +38,20 @@ public class MessagingController {
         List<Message> messages = messagingService.getMessagesForConversation(conversationId);
         return ResponseEntity.ok(messages);
     }
+
+    @PutMapping("/{messageId}")
+    public ResponseEntity<Message> editMessage(@PathVariable UUID messageId, @Valid @RequestBody com.example.auth.dto.request.EditMessageRequest request, Authentication authentication) {
+        User currentUser = userRepository.findByUsername(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        Message updatedMessage = messagingService.editMessage(messageId, request.getContent(), currentUser);
+        return ResponseEntity.ok(updatedMessage);
+    }
+
+    @DeleteMapping("/{messageId}")
+    public ResponseEntity<Void> deleteMessage(@PathVariable UUID messageId, Authentication authentication) {
+        User currentUser = userRepository.findByUsername(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        messagingService.deleteMessage(messageId, currentUser);
+        return ResponseEntity.noContent().build();
+    }
 }

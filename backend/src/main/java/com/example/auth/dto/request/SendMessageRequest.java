@@ -2,6 +2,7 @@ package com.example.auth.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.util.UUID;
 
 public class SendMessageRequest {
@@ -10,6 +11,7 @@ public class SendMessageRequest {
     private UUID conversationId;
 
     @NotBlank
+    @Size(max = 4096)
     private String content;
 
     // Getters and Setters
