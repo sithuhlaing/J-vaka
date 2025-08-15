@@ -8,6 +8,10 @@ import com.example.auth.model.*;
 import com.example.auth.repository.AuditLogRepository;
 import com.example.auth.repository.EmployeeRepository;
 import com.example.auth.repository.UserRepository;
+import com.example.auth.repository.ConsentRepository;
+import com.example.auth.repository.DataAccessLogRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,7 +52,17 @@ public class EmployeeProfileServiceImpl implements EmployeeProfileService {
     private AuditLogRepository auditLogRepository;
 
     @Autowired
+    private ConsentRepository consentRepository;
+
+    @Autowired
+    private DataAccessLogRepository dataAccessLogRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
 
     @Override
     public EmployeeProfileResponse createEmployeeProfile(CreateEmployeeProfileRequest userData, UUID createdBy) {
@@ -294,6 +308,83 @@ public class EmployeeProfileServiceImpl implements EmployeeProfileService {
             .map(this::mapToEmployeeProfileResponse)
             .collect(Collectors.toList());
     }
+
+    @Override
+    public void anonymizeEmployeeData(UUID employeeId) {
+        logger.info("Anonymizing data for employee: {}", employeeId);
+        Employee employee = employeeRepository.findById(employeeId)
+            .orElseThrow(() -> new EmployeeNotFoundException(employeeId));
+
+        User user = employee.getUser();
+        user.setFirstName("Anonymous");
+        user.setLastName("User");
+        user.setEmail(user.getUserId() + "@anonymous.com");
+        user.setUsername(user.getUserId().toString());
+        user.setPassword(passwordEncoder.encode(UUID.randomUUID().toString())); // Invalidate password
+        user.setStatus(UserStatus.INACTIVE);
+        userRepository.save(user);
+
+        employee.setPhoneNumber(null);
+        employee.setAddress(null);
+        employee.setPostcode(null);
+        employee.setEmergencyContactName(null);
+        employee.setEmergencyContactPhone(null);
+        employeeRepository.save(employee);
+
+        createAuditLog(employeeId, "Employee", employeeId, AuditAction.ANONYMIZE);
+        logger.info("Successfully anonymized data for employee: {}", employeeId);
+    }
+
+    @Override
+    public String exportEmployeeData(UUID employeeId) {
+        logger.info("Exporting data for employee: {}", employeeId);
+        Employee employee = employeeRepository.findById(employeeId)
+            .orElseThrow(() -> new EmployeeNotFoundException(employeeId));
+        
+        try {
+            return objectMapper.writeValueAsString(mapToEmployeeProfileResponse(employee));
+        } catch (JsonProcessingException e) {
+            logger.info("Error exporting employee data for employeeId: {}", employeeId, e);
+            throw new RuntimeException("Error exporting employee data", e);
+        }
+    }
+
+    @Override
+    public void deleteEmployeeData(UUID employeeId) {
+        logger.info("Deleting data for employee: {}", employeeId);
+        Employee employee = employeeRepository.findById(employeeId)
+            .orElseThrow(() -> new EmployeeNotFoundException(employeeId));
+        
+        // Perform a soft delete by anonymizing and deactivating
+        anonymizeEmployeeData(employeeId);
+        
+        employee.setEmploymentStatus(EmploymentStatus.TERMINATED);
+        employeeRepository.save(employee);
+
+        createAuditLog(employeeId, "Employee", employeeId, AuditAction.DELETE);
+        logger.info("Successfully marked data for deletion for employee: {}", employeeId);
+    }
+
+    @Override
+    public boolean validateConsentForHealthData(UUID employeeId) {
+        logger.info("Validating consent for health data for employee: {}", employeeId);
+        return consentRepository.findLatestConsentByEmployeeId(employeeId)
+            .map(Consent::isGranted)
+            .orElse(false);
+    }
+
+    @Override
+    public void auditHealthDataAccess(UUID accessorId, UUID employeeId) {
+        logger.info("Auditing health data access by accessor: {} for employee: {}", accessorId, employeeId);
+        User accessor = userRepository.findById(accessorId)
+            .orElseThrow(() -> new RuntimeException("Accessor not found"));
+        Employee employee = employeeRepository.findById(employeeId)
+            .orElseThrow(() -> new EmployeeNotFoundException(employeeId));
+        
+        DataAccessLog log = new DataAccessLog(accessor, employee, "Health Data");
+        dataAccessLogRepository.save(log);
+    }
+
 
     /**
      * Maps Employee entity to EmployeeProfileResponse DTO

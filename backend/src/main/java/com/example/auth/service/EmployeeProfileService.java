@@ -88,4 +88,37 @@ public interface EmployeeProfileService {
      * @return List of matching employee profiles
      */
     List<EmployeeProfileResponse> searchEmployees(String searchTerm);
+
+    /**
+     * Anonymizes employee data for GDPR compliance
+     * @param employeeId The employee ID
+     */
+    void anonymizeEmployeeData(UUID employeeId);
+
+    /**
+     * Exports employee data for GDPR right to portability
+     * @param employeeId The employee ID
+     * @return A string representation of the employee data
+     */
+    String exportEmployeeData(UUID employeeId);
+
+    /**
+     * Deletes employee data for GDPR right to erasure
+     * @param employeeId The employee ID
+     */
+    void deleteEmployeeData(UUID employeeId);
+
+    /**
+     * Validates consent for health data processing
+     * @param employeeId The employee ID
+     * @return true if consent is valid, false otherwise
+     */
+    boolean validateConsentForHealthData(UUID employeeId);
+
+    /**
+     * Audits access to health data
+     * @param accessorId The ID of the user accessing the data
+     * @param employeeId The ID of the employee whose data is being accessed
+     */
+    void auditHealthDataAccess(UUID accessorId, UUID employeeId);
 }
