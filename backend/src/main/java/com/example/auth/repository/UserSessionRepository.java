@@ -16,8 +16,6 @@ import java.util.UUID;
 public interface UserSessionRepository extends JpaRepository<UserSession, UUID> {
     Optional<UserSession> findByJwtToken(String jwtToken);
     Optional<UserSession> findByRefreshToken(String refreshToken);
-
-    void deleteByJwtToken(String jwtToken);
     
     List<UserSession> findByUser(User user);
     List<UserSession> findByUserOrderByCreatedAtDesc(User user);

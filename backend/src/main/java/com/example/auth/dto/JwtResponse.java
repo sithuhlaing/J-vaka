@@ -1,11 +1,10 @@
-package com.example.auth.dto.response;
+package com.example.auth.dto;
 
 import java.util.List;
 import java.util.UUID;
 
 public class JwtResponse {
-    private String accessToken;
-    private String refreshToken;
+    private String token;
     private String type = "Bearer";
     private UUID userId;
     private String username;
@@ -14,9 +13,9 @@ public class JwtResponse {
     private String lastName;
     private List<String> roles;
 
-    public JwtResponse(String accessToken, String refreshToken, UUID userId, String username, String email, String firstName, String lastName, List<String> roles) {
-        this.accessToken = accessToken;
-        this.refreshToken = refreshToken;
+    public JwtResponse(String accessToken, UUID userId, String username, String email,
+                      String firstName, String lastName, List<String> roles) {
+        this.token = accessToken;
         this.userId = userId;
         this.username = username;
         this.email = email;
@@ -26,19 +25,11 @@ public class JwtResponse {
     }
 
     public String getAccessToken() {
-        return accessToken;
+        return token;
     }
 
     public void setAccessToken(String accessToken) {
-        this.accessToken = accessToken;
-    }
-
-    public String getRefreshToken() {
-        return refreshToken;
-    }
-
-    public void setRefreshToken(String refreshToken) {
-        this.refreshToken = refreshToken;
+        this.token = accessToken;
     }
 
     public String getTokenType() {
