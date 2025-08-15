@@ -1,5 +1,6 @@
 package com.example.auth.service;
 
+import com.example.auth.model.AuditAction;
 import com.example.auth.model.User;
 import com.example.auth.model.UserSession;
 import com.example.auth.repository.UserSessionRepository;
@@ -39,13 +40,13 @@ public class SuspiciousLoginService {
         if (ipIsNew) {
             String message = String.format("Suspicious login detected for user %s from new IP address %s", user.getUsername(), ipAddress);
             logger.warn(message);
-            auditLogService.logSecurityEvent(user, "SUSPICIOUS_LOGIN_IP", ipAddress, java.util.Map.of("message", message));
+            auditLogService.logSecurityEvent(user, AuditAction.SUSPICIOUS_LOGIN_IP, ipAddress, java.util.Map.of("message", message));
         }
 
         if (userAgentIsNew) {
             String message = String.format("Suspicious login detected for user %s with new User-Agent %s", user.getUsername(), userAgent);
             logger.warn(message);
-            auditLogService.logSecurityEvent(user, "SUSPICIOUS_LOGIN_USER_AGENT", ipAddress, java.util.Map.of("message", message, "userAgent", userAgent));
+            auditLogService.logSecurityEvent(user, AuditAction.SUSPICIOUS_LOGIN_USER_AGENT, ipAddress, java.util.Map.of("message", message, "userAgent", userAgent));
         }
     }
 }

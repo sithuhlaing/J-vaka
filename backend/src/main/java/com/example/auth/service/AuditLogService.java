@@ -1,5 +1,6 @@
 package com.example.auth.service;
 
+import com.example.auth.model.AuditAction;
 import com.example.auth.model.AuditLog;
 import com.example.auth.model.User;
 import com.example.auth.repository.AuditLogRepository;
@@ -17,7 +18,7 @@ public class AuditLogService {
     private AuditLogRepository auditLogRepository;
 
     @Transactional
-    public void logSecurityEvent(User user, String action, String ipAddress, Map<String, Object> metadata) {
+    public void logSecurityEvent(User user, AuditAction action, String ipAddress, Map<String, Object> metadata) {
         AuditLog auditLog = new AuditLog();
         if (user != null) {
             auditLog.setUser(user);
@@ -32,7 +33,7 @@ public class AuditLogService {
     }
 
     @Transactional
-    public void logEvent(String action, Map<String, Object> metadata) {
+    public void logEvent(AuditAction action, Map<String, Object> metadata) {
         logSecurityEvent(null, action, null, metadata);
     }
 }

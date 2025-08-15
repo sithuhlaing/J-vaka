@@ -6,5 +6,10 @@ public enum AuditAction {
     UPDATE,
     DELETE,
     LOGIN,
-    LOGOUT
+    LOGOUT,
+    LOGIN_SUCCESS,
+    LOGIN_FAILURE,
+    TOKEN_REFRESH,
+    SUSPICIOUS_LOGIN_IP,
+    SUSPICIOUS_LOGIN_USER_AGENT
 }

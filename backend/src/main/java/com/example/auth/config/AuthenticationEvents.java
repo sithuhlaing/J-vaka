@@ -1,5 +1,6 @@
 package com.example.auth.config;
 
+import com.example.auth.model.AuditAction;
 import com.example.auth.model.User;
 import com.example.auth.repository.UserRepository;
 import com.example.auth.service.AuditLogService;
@@ -36,7 +37,7 @@ public class AuthenticationEvents {
             String username = ((UserDetails) principal).getUsername();
             User user = userRepository.findByUsername(username).orElse(null);
 
-            auditLogService.logSecurityEvent(user, "LOGIN_SUCCESS", ipAddress,
+            auditLogService.logSecurityEvent(user, AuditAction.LOGIN_SUCCESS, ipAddress,
                 Map.of("principal", username));
 
             suspiciousLoginService.detectSuspiciousLogin(user, ipAddress, null); // User-agent not easily available here
@@ -46,7 +47,7 @@ public class AuthenticationEvents {
     @EventListener
     public void onFailure(AbstractAuthenticationFailureEvent failure) {
         String username = (String) failure.getAuthentication().getPrincipal();
-        auditLogService.logEvent("LOGIN_FAILURE",
+        auditLogService.logEvent(AuditAction.LOGIN_FAILURE,
             Map.of("principal", username, "exception", failure.getException().getMessage()));
     }
 }
