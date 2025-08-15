@@ -1,0 +1,1448 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* NHS UK Design System Color Palette */
+:root {
+  /* NHS Brand Colors */
+  --nhs-blue: #005eb8;
+  --nhs-dark-blue: #003087;
+  --nhs-bright-blue: #0072ce;
+  --nhs-light-blue: #41b6e6;
+  --nhs-aqua-blue: #00a9ce;
+
+  /* NHS Supporting Colors */
+  --nhs-green: #00703c;
+  --nhs-dark-green: #004225;
+  --nhs-light-green: #78be20;
+  --nhs-warm-yellow: #ffb81c;
+  --nhs-red: #da291c;
+  --nhs-orange: #ed8b00;
+  --nhs-purple: #330072;
+  --nhs-pink: #ae2573;
+
+  /* NHS Neutral Colors */
+  --nhs-black: #231f20;
+  --nhs-dark-grey: #425563;
+  --nhs-mid-grey: #768692;
+  --nhs-pale-grey: #e8edee;
+  --nhs-white: #ffffff;
+
+  /* NHS Focus and Interaction Colors */
+  --nhs-focus-color: #ffb81c;
+  --nhs-focus-text-color: #231f20;
+  --nhs-error-color: #da291c;
+  --nhs-success-color: #00703c;
+  --nhs-warning-color: #ffb81c;
+
+  /* NHS Text Colors */
+  --nhs-text-color: #231f20;
+  --nhs-secondary-text-color: #425563;
+  --nhs-link-color: #005eb8;
+  --nhs-link-hover-color: #003087;
+
+  /* Updated semantic colors using NHS palette */
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --radius: 0.625rem; /* NHS uses smaller border radius */
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+}
+
+/* NHS Light Dark Mode (Softer dark theme) */
+.dark {
+  --background: oklch(0.08 0 0);
+  --foreground: oklch(0.95 0 0);
+  --card: oklch(0.12 0 0);
+  --card-foreground: oklch(0.95 0 0);
+  --popover: oklch(0.12 0 0);
+  --popover-foreground: oklch(0.95 0 0);
+  --primary: oklch(0.6 0.222 41.116);
+  --primary-foreground: oklch(0.95 0 0);
+  --secondary: oklch(0.18 0 0);
+  --secondary-foreground: oklch(0.9 0 0);
+  --muted: oklch(0.15 0 0);
+  --muted-foreground: oklch(0.7 0 0);
+  --accent: oklch(0.18 0 0);
+  --accent-foreground: oklch(0.9 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.95 0 0);
+  --border: oklch(0.25 0 0);
+  --input: oklch(0.2 0 0);
+  --ring: oklch(0.6 0.222 41.116);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.598 0.07 227.392);
+  --chart-4: oklch(0.728 0.189 84.429);
+  --chart-5: oklch(0.669 0.188 70.08);
+  --sidebar: oklch(0.12 0 0);
+  --sidebar-foreground: oklch(0.9 0 0);
+  --sidebar-primary: oklch(0.6 0.222 41.116);
+  --sidebar-primary-foreground: oklch(0.95 0 0);
+  --sidebar-accent: oklch(0.18 0 0);
+  --sidebar-accent-foreground: oklch(0.9 0 0);
+  --sidebar-border: oklch(0.25 0 0);
+  --sidebar-ring: oklch(0.6 0.222 41.116);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: "Frutiger W01", Arial, sans-serif; /* NHS Typography */
+    line-height: 1.5;
+  }
+
+  /* NHS Typography Scale */
+  h1 {
+    @apply text-3xl font-bold leading-tight mb-4;
+  }
+  h2 {
+    @apply text-2xl font-semibold leading-tight mb-3;
+  }
+  h3 {
+    @apply text-xl font-semibold leading-tight mb-3;
+  }
+  h4 {
+    @apply text-lg font-medium leading-tight mb-2;
+  }
+  h5 {
+    @apply text-base font-medium leading-tight mb-2;
+  }
+  h6 {
+    @apply text-sm font-medium leading-tight mb-2;
+  }
+
+  p {
+    @apply mb-4 leading-relaxed;
+  }
+
+  /* NHS Focus Management - WCAG 2.1 AA Compliant */
+  *:focus-visible {
+    outline: 3px solid var(--nhs-focus-color) !important;
+    outline-offset: 2px;
+    box-shadow: none;
+  }
+
+  /* NHS Skip Links */
+  .nhsuk-skip-link {
+    @apply absolute -top-10 left-4 z-50 px-4 py-2 rounded;
+    background-color: var(--nhs-focus-color);
+    color: var(--nhs-focus-text-color);
+    font-weight: 600;
+    text-decoration: none;
+    transition: top 0.3s;
+  }
+
+  .nhsuk-skip-link:focus {
+    @apply top-4;
+  }
+
+  /* NHS Button Styles */
+  .nhs-button {
+    @apply inline-flex items-center justify-center px-4 py-2 text-base font-semibold rounded border-2 transition-all duration-200;
+    min-height: 44px; /* WCAG AA touch target size */
+    border-color: transparent;
+  }
+
+  .nhs-button:focus-visible {
+    outline: 3px solid var(--nhs-focus-color);
+    outline-offset: 2px;
+    background-color: var(--nhs-focus-color);
+    color: var(--nhs-focus-text-color);
+  }
+
+  .nhs-button--primary {
+    background-color: var(--nhs-green);
+    color: var(--nhs-white);
+  }
+
+  .nhs-button--primary:hover {
+    background-color: var(--nhs-dark-green);
+  }
+
+  .nhs-button--secondary {
+    background-color: var(--nhs-pale-grey);
+    color: var(--nhs-text-color);
+    border-color: var(--nhs-mid-grey);
+  }
+
+  .nhs-button--secondary:hover {
+    background-color: var(--nhs-mid-grey);
+    color: var(--nhs-white);
+  }
+
+  /* NHS Form Elements */
+  .nhs-input {
+    @apply w-full px-3 py-2 text-base border-2 rounded;
+    min-height: 44px;
+    border-color: var(--nhs-dark-grey);
+    background-color: var(--nhs-white);
+    color: var(--nhs-text-color);
+  }
+
+  .nhs-input:focus-visible {
+    outline: 3px solid var(--nhs-focus-color);
+    outline-offset: 2px;
+    border-color: var(--nhs-text-color);
+  }
+
+  .nhs-input--error {
+    border-color: var(--nhs-error-color);
+  }
+
+  /* NHS Error Messages */
+  .nhs-error-message {
+    color: var(--nhs-error-color);
+    font-weight: 600;
+    margin-top: 0.25rem;
+  }
+
+  /* NHS Success Messages */
+  .nhs-success-message {
+    color: var(--nhs-success-color);
+    font-weight: 600;
+  }
+
+  /* NHS Warning Messages */
+  .nhs-warning-message {
+    color: var(--nhs-warning-color);
+    font-weight: 600;
+  }
+
+  /* NHS Card Styles */
+  .nhs-card {
+    @apply bg-white border border-gray-200 rounded p-4 shadow-sm;
+    border-color: var(--nhs-pale-grey);
+  }
+
+  /* NHS Link Styles */
+  a {
+    color: var(--nhs-link-color);
+    text-decoration: underline;
+  }
+
+  a:hover {
+    color: var(--nhs-link-hover-color);
+  }
+
+  a:focus-visible {
+    outline: 3px solid var(--nhs-focus-color);
+    outline-offset: 2px;
+    background-color: var(--nhs-focus-color);
+    color: var(--nhs-focus-text-color);
+  }
+
+  /* Added NHS UK Frontend Header Styles */
+  /* NHS Header Component Styles */
+  .nhsuk-header {
+    background-color: var(--nhs-blue);
+    border-bottom: 4px solid var(--nhs-warm-yellow);
+  }
+
+  .nhsuk-header--white {
+    background-color: var(--nhs-white);
+    border-bottom: 1px solid var(--nhs-pale-grey);
+  }
+
+  .nhsuk-header--white-nav {
+    background-color: var(--nhs-white);
+  }
+
+  .nhsuk-width-container {
+    max-width: 1020px;
+    margin: 0 auto;
+    padding: 0 16px;
+  }
+
+  .nhsuk-header__container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 0;
+  }
+
+  .nhsuk-header__logo {
+    flex-shrink: 0;
+  }
+
+  .nhsuk-header__link {
+    display: block;
+    text-decoration: none;
+  }
+
+  .nhsuk-header__link:focus {
+    outline: 3px solid var(--nhs-focus-color);
+    outline-offset: 2px;
+  }
+
+  .nhsuk-logo {
+    height: 40px;
+    width: auto;
+  }
+
+  .nhsuk-logo--white .nhsuk-logo__background {
+    fill: var(--nhs-blue);
+  }
+
+  .nhsuk-logo--white .nhsuk-logo__text {
+    fill: var(--nhs-white);
+  }
+
+  .nhsuk-header__content {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    justify-content: space-between;
+    margin-left: 40px;
+  }
+
+  .nhsuk-header__menu {
+    display: none;
+  }
+
+  .nhsuk-header__menu-toggle {
+    background: none;
+    border: 2px solid var(--nhs-blue);
+    color: var(--nhs-blue);
+    cursor: pointer;
+    display: block;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 1;
+    margin: 0;
+    padding: 7px 10px;
+    position: relative;
+    text-align: center;
+    vertical-align: top;
+  }
+
+  .nhsuk-header__organisation {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .nhsuk-header__organisation-name {
+    color: var(--nhs-blue);
+    display: block;
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.2;
+    margin: 0;
+  }
+
+  .nhsuk-header__organisation-descriptor {
+    color: var(--nhs-dark-grey);
+    display: block;
+    font-size: 15px;
+    font-weight: 400;
+    line-height: 1.2;
+    margin: 0;
+  }
+
+  .nhsuk-header__actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .nhsuk-header__action-link {
+    color: var(--nhs-blue);
+    text-decoration: none;
+    font-weight: 400;
+  }
+
+  .nhsuk-header__action-link:hover {
+    color: var(--nhs-dark-blue);
+  }
+
+  .nhsuk-header__action-link:focus {
+    outline: 3px solid var(--nhs-focus-color);
+    outline-offset: 2px;
+    background-color: var(--nhs-focus-color);
+    color: var(--nhs-focus-text-color);
+  }
+
+  /* NHS Navigation Styles */
+  .nhsuk-header__navigation {
+    background-color: var(--nhs-blue);
+    display: block;
+    margin: 0;
+    padding: 0;
+    position: relative;
+  }
+
+  .nhsuk-header__navigation-title {
+    color: var(--nhs-white);
+    display: none;
+    font-size: 16px;
+    font-weight: 400;
+    margin: 0;
+    padding: 13px 0;
+    position: relative;
+  }
+
+  .nhsuk-header__navigation-close {
+    background: none;
+    border: 0;
+    color: var(--nhs-white);
+    cursor: pointer;
+    height: 40px;
+    padding: 0;
+    position: absolute;
+    right: 0;
+    top: 8px;
+    width: 40px;
+  }
+
+  .nhsuk-header__navigation-list {
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .nhsuk-header__navigation-item {
+    border-bottom: 4px solid transparent;
+    margin: 0;
+    position: relative;
+  }
+
+  .nhsuk-header__navigation-link {
+    border-bottom: 4px solid transparent;
+    color: var(--nhs-white);
+    display: flex;
+    align-items: center;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 1;
+    padding: 12px 16px;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .nhsuk-header__navigation-link:hover {
+    background-color: #ffeb3b; /* Bright yellow background */
+    border-bottom-color: #212b32; /* Black underline */
+    color: #212b32; /* Black text */
+  }
+
+  .nhsuk-header__navigation-link:focus {
+    background-color: var(--nhs-focus-color);
+    border-bottom-color: var(--nhs-focus-text-color);
+    color: var(--nhs-focus-text-color);
+    outline: 3px solid var(--nhs-focus-color);
+    outline-offset: -3px;
+  }
+
+  .nhsuk-header__navigation-link--active {
+    background-color: #ffeb3b; /* Bright yellow background */
+    color: #212b32; /* Black text */
+    border-bottom: 4px solid #212b32; /* Black underline */
+    font-weight: 600;
+  }
+
+  .nhsuk-header__navigation-link--active:hover {
+    background-color: #fff176; /* Slightly lighter yellow on hover */
+    color: #212b32; /* Keep black text */
+    border-bottom-color: #212b32; /* Keep black underline */
+  }
+
+  .nhsuk-icon {
+    fill: currentColor;
+    height: 16px;
+    width: 16px;
+  }
+
+  .nhsuk-icon--size-16 {
+    height: 16px;
+    width: 16px;
+  }
+
+  .nhsuk-icon__chevron-right {
+    display: none;
+  }
+
+  .nhsuk-u-visually-hidden {
+    border: 0 !important;
+    clip: rect(0 0 0 0) !important;
+    -webkit-clip-path: inset(50%) !important;
+    clip-path: inset(50%) !important;
+    height: 1px !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    padding: 0 !important;
+    position: absolute !important;
+    white-space: nowrap !important;
+    width: 1px !important;
+  }
+
+  /* NHS Main Content Styles */
+  .nhsuk-main-wrapper {
+    padding: 40px 0;
+  }
+
+  /* Mobile Navigation Styles */
+  @media (max-width: 768px) {
+    .nhsuk-header__menu {
+      display: block;
+    }
+
+    .nhsuk-header__navigation-title {
+      display: block;
+    }
+
+    .nhsuk-header__navigation-list {
+      background-color: var(--nhs-blue);
+      display: none;
+      flex-direction: column;
+      left: 0;
+      position: absolute;
+      right: 0;
+      top: 100%;
+      z-index: 1000;
+    }
+
+    .nhsuk-header__navigation-list--open {
+      display: flex;
+    }
+
+    .nhsuk-header__navigation-item {
+      border-bottom: 1px solid var(--nhs-dark-blue);
+      width: 100%;
+    }
+
+    .nhsuk-header__navigation-link {
+      justify-content: space-between;
+      padding: 16px;
+    }
+
+    .nhsuk-header__navigation-link--active {
+      background-color: #ffeb3b;
+      color: #212b32;
+      border-left: 4px solid #212b32;
+      border-bottom: 1px solid var(--nhs-dark-blue);
+    }
+
+    .nhsuk-icon__chevron-right {
+      display: block;
+    }
+
+    .nhsuk-header__organisation {
+      display: none;
+    }
+
+    .nhsuk-header__actions {
+      gap: 8px;
+    }
+  }
+
+  /* NHS User Dropdown Menu Styles */
+  .nhsuk-header__user-menu {
+    position: relative;
+    margin-left: 16px;
+  }
+
+  .nhsuk-header__user-button {
+    background: none;
+    border: 2px solid var(--nhs-blue);
+    color: var(--nhs-blue);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    font-weight: 400;
+    padding: 8px 12px;
+    text-decoration: none;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+  }
+
+  .nhsuk-header__user-button:hover {
+    background-color: var(--nhs-blue);
+    color: var(--nhs-white);
+  }
+
+  .nhsuk-header__user-button:focus {
+    outline: 3px solid var(--nhs-focus-color);
+    outline-offset: 2px;
+    background-color: var(--nhs-focus-color);
+    color: var(--nhs-focus-text-color);
+  }
+
+  .nhsuk-header__user-name {
+    font-weight: 600;
+    text-transform: capitalize;
+  }
+
+  .nhsuk-header__user-dropdown-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 999;
+  }
+
+  .nhsuk-header__user-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background-color: var(--nhs-white);
+    border: 2px solid var(--nhs-pale-grey);
+    border-radius: 4px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    min-width: 200px;
+    z-index: 1000;
+    margin-top: 4px;
+  }
+
+  .nhsuk-header__user-dropdown-list {
+    list-style: none;
+    margin: 0;
+    padding: 8px 0;
+  }
+
+  .nhsuk-header__user-dropdown-link {
+    background: none;
+    border: none;
+    color: var(--nhs-text-color);
+    cursor: pointer;
+    display: block;
+    font-size: 16px;
+    font-weight: 400;
+    padding: 12px 16px;
+    text-align: left;
+    text-decoration: none;
+    width: 100%;
+    transition: background-color 0.2s ease;
+  }
+
+  .nhsuk-header__user-dropdown-link:hover {
+    background-color: #ffeb3b;
+    color: #212b32;
+  }
+
+  .nhsuk-header__user-dropdown-link:focus {
+    background-color: var(--nhs-focus-color);
+    color: var(--nhs-focus-text-color);
+    outline: 3px solid var(--nhs-focus-color);
+    outline-offset: -3px;
+  }
+
+  .nhsuk-header__user-dropdown-link--danger {
+    color: var(--nhs-red);
+  }
+
+  .nhsuk-header__user-dropdown-link--danger:hover {
+    background-color: var(--nhs-red);
+    color: var(--nhs-white);
+  }
+}
+
+/* NHS High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  :root {
+    --nhs-text-color: #000000;
+    --background: #ffffff;
+    --foreground: #000000;
+    --border: #000000;
+  }
+}
+
+/* NHS Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* NHS Button Styles - Updated to match NHS UK Frontend specifications */
+.nhsuk-button {
+  @apply inline-flex items-center justify-center px-4 py-2 text-base font-semibold rounded border-2 transition-all duration-200;
+  min-height: 44px; /* WCAG AA touch target size */
+  border-color: transparent;
+  background-color: var(--nhs-green);
+  color: var(--nhs-white);
+  cursor: pointer;
+  font-family: "Frutiger W01", Arial, sans-serif;
+  font-weight: 600;
+  line-height: 1.1;
+  margin: 0;
+  padding: 8px 16px;
+  position: relative;
+  text-align: center;
+  text-decoration: none;
+  vertical-align: top;
+  border-radius: 4px;
+  box-shadow: 0 4px 0 var(--nhs-dark-green);
+}
+
+.nhsuk-button:hover {
+  background-color: var(--nhs-dark-green);
+  box-shadow: 0 2px 0 var(--nhs-dark-green);
+  transform: translateY(2px);
+}
+
+.nhsuk-button:focus {
+  outline: 3px solid var(--nhs-focus-color);
+  outline-offset: 2px;
+  background-color: var(--nhs-focus-color);
+  color: var(--nhs-focus-text-color);
+  box-shadow: 0 4px 0 var(--nhs-focus-text-color);
+}
+
+.nhsuk-button:active {
+  background-color: var(--nhs-dark-green);
+  box-shadow: 0 0 0 var(--nhs-dark-green);
+  transform: translateY(4px);
+}
+
+/* NHS Secondary Button */
+.nhsuk-button--secondary {
+  background-color: var(--nhs-pale-grey);
+  color: var(--nhs-text-color);
+  box-shadow: 0 4px 0 var(--nhs-mid-grey);
+}
+
+.nhsuk-button--secondary:hover {
+  background-color: var(--nhs-mid-grey);
+  color: var(--nhs-white);
+  box-shadow: 0 2px 0 var(--nhs-dark-grey);
+}
+
+.nhsuk-button--secondary:active {
+  box-shadow: 0 0 0 var(--nhs-mid-grey);
+}
+
+/* NHS Reverse Button (for dark backgrounds) */
+.nhsuk-button--reverse {
+  background-color: var(--nhs-white);
+  color: var(--nhs-blue);
+  box-shadow: 0 4px 0 var(--nhs-pale-grey);
+}
+
+.nhsuk-button--reverse:hover {
+  background-color: var(--nhs-pale-grey);
+  color: var(--nhs-dark-blue);
+  box-shadow: 0 2px 0 var(--nhs-mid-grey);
+}
+
+.nhsuk-button--reverse:active {
+  box-shadow: 0 0 0 var(--nhs-pale-grey);
+}
+
+/* NHS Warning Button */
+.nhsuk-button--warning {
+  background-color: var(--nhs-red);
+  color: var(--nhs-white);
+  box-shadow: 0 4px 0 #b02317;
+}
+
+.nhsuk-button--warning:hover {
+  background-color: #b02317;
+  box-shadow: 0 2px 0 #8b1c13;
+}
+
+.nhsuk-button--warning:active {
+  box-shadow: 0 0 0 #b02317;
+}
+
+/* NHS Disabled Button */
+.nhsuk-button--disabled,
+.nhsuk-button:disabled {
+  background-color: var(--nhs-mid-grey);
+  color: var(--nhs-pale-grey);
+  cursor: not-allowed;
+  opacity: 0.5;
+  box-shadow: 0 4px 0 var(--nhs-dark-grey);
+}
+
+.nhsuk-button--disabled:hover,
+.nhsuk-button:disabled:hover {
+  background-color: var(--nhs-mid-grey);
+  transform: none;
+  box-shadow: 0 4px 0 var(--nhs-dark-grey);
+}
+
+.nhsuk-button--disabled:active,
+.nhsuk-button:disabled:active {
+  transform: none;
+  box-shadow: 0 4px 0 var(--nhs-dark-grey);
+}
+
+/* NHS Tag Component Styles */
+.nhsuk-tag {
+  @apply inline-flex items-center px-2 py-1 text-xs font-semibold rounded;
+  background-color: var(--nhs-mid-grey);
+  color: var(--nhs-white);
+  font-family: "Frutiger W01", Arial, sans-serif;
+  font-weight: 700;
+  letter-spacing: 1px;
+  line-height: 1;
+  padding: 4px 8px;
+  text-transform: uppercase;
+  text-decoration: none;
+  vertical-align: baseline;
+  white-space: nowrap;
+}
+
+/* NHS Tag Color Variants */
+.nhsuk-tag--white {
+  background-color: var(--nhs-white);
+  color: var(--nhs-text-color);
+  border: 1px solid var(--nhs-mid-grey);
+}
+
+.nhsuk-tag--grey {
+  background-color: var(--nhs-mid-grey);
+  color: var(--nhs-white);
+}
+
+.nhsuk-tag--green {
+  background-color: var(--nhs-green);
+  color: var(--nhs-white);
+}
+
+.nhsuk-tag--aqua-green {
+  background-color: var(--nhs-aqua-blue);
+  color: var(--nhs-white);
+}
+
+.nhsuk-tag--blue {
+  background-color: var(--nhs-blue);
+  color: var(--nhs-white);
+}
+
+.nhsuk-tag--purple {
+  background-color: var(--nhs-purple);
+  color: var(--nhs-white);
+}
+
+.nhsuk-tag--pink {
+  background-color: var(--nhs-pink);
+  color: var(--nhs-white);
+}
+
+.nhsuk-tag--red {
+  background-color: var(--nhs-red);
+  color: var(--nhs-white);
+}
+
+.nhsuk-tag--orange {
+  background-color: var(--nhs-orange);
+  color: var(--nhs-white);
+}
+
+.nhsuk-tag--yellow {
+  background-color: var(--nhs-warm-yellow);
+  color: var(--nhs-text-color);
+}
+
+/* NHS Tag Accessibility */
+.nhsuk-tag:focus {
+  outline: 3px solid var(--nhs-focus-color);
+  outline-offset: 2px;
+}
+
+/* NHS Tag Dark Mode Support */
+.dark .nhsuk-tag {
+  border: 1px solid var(--nhs-pale-grey);
+}
+
+.dark .nhsuk-tag--white {
+  background-color: var(--nhs-dark-grey);
+  color: var(--nhs-white);
+  border-color: var(--nhs-mid-grey);
+}
+
+.dark .nhsuk-tag--yellow {
+  color: var(--nhs-black);
+}
+
+/* NHS Care Card Component Styles */
+.nhsuk-care-card {
+  @apply mb-6 p-6 bg-white border-l-8 border-solid;
+  font-family: "Frutiger W01", Arial, sans-serif;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.nhsuk-care-card--non-urgent {
+  border-left-color: var(--nhs-blue);
+  background-color: #f0f8ff;
+}
+
+.nhsuk-care-card--urgent {
+  border-left-color: var(--nhs-red);
+  background-color: #fef7f7;
+}
+
+.nhsuk-care-card--immediate {
+  border-left-color: #8b0000;
+  background-color: #fff0f0;
+}
+
+.nhsuk-care-card__heading-container {
+  @apply flex items-center gap-3 mb-4;
+}
+
+.nhsuk-care-card--non-urgent .nhsuk-care-card__heading-container {
+  color: var(--nhs-blue);
+}
+
+.nhsuk-care-card--urgent .nhsuk-care-card__heading-container {
+  color: var(--nhs-red);
+}
+
+.nhsuk-care-card--immediate .nhsuk-care-card__heading-container {
+  color: #8b0000;
+}
+
+.nhsuk-care-card__heading {
+  @apply text-xl font-bold m-0;
+  font-family: "Frutiger W01", Arial, sans-serif;
+  line-height: 1.2;
+}
+
+.nhsuk-care-card__content {
+  @apply text-gray-800 leading-relaxed;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.nhsuk-care-card__content p {
+  @apply mb-4;
+}
+
+.nhsuk-care-card__content p:last-child {
+  @apply mb-0;
+}
+
+.nhsuk-care-card__content ul,
+.nhsuk-care-card__content ol {
+  @apply mb-4 pl-6;
+}
+
+.nhsuk-care-card__content li {
+  @apply mb-2;
+}
+
+/* NHS Care Card Icons */
+.nhsuk-icon {
+  @apply w-6 h-6;
+  fill: currentColor;
+}
+
+.nhsuk-icon__info {
+  fill: var(--nhs-blue);
+}
+
+.nhsuk-icon__warning {
+  fill: var(--nhs-red);
+}
+
+.nhsuk-icon__cross {
+  fill: #8b0000;
+}
+
+/* NHS Summary List Component Styles */
+.nhsuk-summary-list {
+  @apply border-t border-gray-300;
+  font-family: "Frutiger W01", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+.nhsuk-summary-list__row {
+  @apply border-b border-gray-200 py-3 flex flex-col sm:flex-row sm:items-start;
+  margin: 0;
+}
+
+.nhsuk-summary-list__row:last-child {
+  border-bottom: none;
+}
+
+.nhsuk-summary-list__key {
+  @apply font-bold text-gray-900 mb-1 sm:mb-0 sm:w-1/3 sm:pr-4;
+  font-family: "Frutiger W01", Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.25;
+  margin: 0;
+}
+
+.nhsuk-summary-list__value {
+  @apply text-gray-800 sm:w-2/3 m-0;
+  font-size: 16px;
+  line-height: 1.25;
+}
+
+.nhsuk-summary-list__actions {
+  @apply mt-2 sm:mt-0 sm:text-right;
+  margin: 0;
+}
+
+.nhsuk-summary-list__actions a {
+  color: var(--nhs-link-color);
+  text-decoration: underline;
+  font-weight: 400;
+}
+
+.nhsuk-summary-list__actions a:hover {
+  color: var(--nhs-link-hover-color);
+}
+
+.nhsuk-summary-list__actions a:focus {
+  outline: 3px solid var(--nhs-focus-color);
+  outline-offset: 2px;
+  background-color: var(--nhs-focus-color);
+  color: var(--nhs-focus-text-color);
+}
+
+/* NHS Care Card Accessibility Enhancements */
+.nhsuk-care-card:focus-within {
+  outline: 3px solid var(--nhs-focus-color);
+  outline-offset: 2px;
+}
+
+/* NHS Care Card Dark Mode Support */
+.dark .nhsuk-care-card {
+  background-color: var(--nhs-dark-grey);
+  color: var(--nhs-white);
+}
+
+.dark .nhsuk-care-card--non-urgent {
+  background-color: #1a2332;
+  border-left-color: var(--nhs-bright-blue);
+}
+
+.dark .nhsuk-care-card--urgent {
+  background-color: #2d1a1a;
+  border-left-color: #ff4444;
+}
+
+.dark .nhsuk-care-card--immediate {
+  background-color: #331a1a;
+  border-left-color: #cc0000;
+}
+
+.dark .nhsuk-care-card__content {
+  color: var(--nhs-white);
+}
+
+/* NHS Video Call Interface Styles */
+.nhsuk-video-call {
+  font-family: "Frutiger W01", Arial, sans-serif;
+  background-color: var(--nhs-black);
+  color: var(--nhs-white);
+}
+
+.nhsuk-video-call__header {
+  background-color: var(--nhs-white);
+  border-bottom: 4px solid var(--nhs-blue);
+  color: var(--nhs-text-color);
+  padding: 16px;
+}
+
+.nhsuk-video-call__title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--nhs-text-color);
+  margin: 0;
+}
+
+.nhsuk-video-call__subtitle {
+  font-size: 0.875rem;
+  color: var(--nhs-secondary-text-color);
+  margin: 4px 0 0 0;
+}
+
+.nhsuk-video-call__duration {
+  font-family: "Courier New", monospace;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--nhs-text-color);
+}
+
+.nhsuk-video-call__video-area {
+  background-color: var(--nhs-black);
+  position: relative;
+  flex: 1;
+}
+
+.nhsuk-video-call__remote-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background-color: var(--nhs-dark-grey);
+}
+
+.nhsuk-video-call__local-video {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 256px;
+  height: 192px;
+  background-color: var(--nhs-dark-grey);
+  border: 2px solid var(--nhs-white);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.nhsuk-video-call__local-video video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.nhsuk-video-call__video-disabled {
+  position: absolute;
+  inset: 0;
+  background-color: var(--nhs-dark-grey);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--nhs-white);
+}
+
+.nhsuk-video-call__screen-sharing-indicator {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background-color: var(--nhs-red);
+  color: var(--nhs-white);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.nhsuk-video-call__overlay {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.nhsuk-video-call__connection-card {
+  background-color: var(--nhs-white);
+  border-radius: 8px;
+  padding: 24px;
+  text-align: center;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  max-width: 400px;
+}
+
+.nhsuk-video-call__connection-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--nhs-pale-grey);
+  border-top: 3px solid var(--nhs-blue);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 16px;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.nhsuk-video-call__connection-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--nhs-text-color);
+  margin: 0 0 8px 0;
+}
+
+.nhsuk-video-call__connection-subtitle {
+  font-size: 0.875rem;
+  color: var(--nhs-secondary-text-color);
+  margin: 0;
+}
+
+.nhsuk-video-call__participant-info {
+  position: absolute;
+  bottom: 80px;
+  left: 16px;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: var(--nhs-white);
+  padding: 12px 16px;
+  border-radius: 8px;
+  backdrop-filter: blur(4px);
+}
+
+.nhsuk-video-call__participant-name {
+  font-weight: 600;
+  margin: 0 8px 0 0;
+}
+
+.nhsuk-video-call__participant-role {
+  background-color: var(--nhs-blue);
+  color: var(--nhs-white);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.nhsuk-video-call__controls {
+  background-color: var(--nhs-white);
+  border-top: 1px solid var(--nhs-pale-grey);
+  padding: 16px;
+}
+
+.nhsuk-video-call__controls-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.nhsuk-video-call__control-button {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0;
+  position: relative;
+}
+
+.nhsuk-video-call__control-button:focus-visible {
+  outline: 3px solid var(--nhs-focus-color);
+  outline-offset: 2px;
+}
+
+.nhsuk-video-call__control-button--mute {
+  background-color: var(--nhs-pale-grey);
+  color: var(--nhs-text-color);
+}
+
+.nhsuk-video-call__control-button--mute.active {
+  background-color: var(--nhs-red);
+  color: var(--nhs-white);
+}
+
+.nhsuk-video-call__control-button--video {
+  background-color: var(--nhs-pale-grey);
+  color: var(--nhs-text-color);
+}
+
+.nhsuk-video-call__control-button--video.active {
+  background-color: var(--nhs-red);
+  color: var(--nhs-white);
+}
+
+.nhsuk-video-call__control-button--screen {
+  background-color: var(--nhs-pale-grey);
+  color: var(--nhs-text-color);
+}
+
+.nhsuk-video-call__control-button--screen.active {
+  background-color: var(--nhs-blue);
+  color: var(--nhs-white);
+}
+
+.nhsuk-video-call__control-button--chat {
+  background-color: var(--nhs-pale-grey);
+  color: var(--nhs-text-color);
+}
+
+.nhsuk-video-call__control-button--chat.active {
+  background-color: var(--nhs-blue);
+  color: var(--nhs-white);
+}
+
+.nhsuk-video-call__control-button--settings {
+  background-color: var(--nhs-pale-grey);
+  color: var(--nhs-text-color);
+}
+
+.nhsuk-video-call__control-button--end {
+  background-color: var(--nhs-red);
+  color: var(--nhs-white);
+}
+
+.nhsuk-video-call__control-button--end:hover {
+  background-color: var(--nhs-error-color);
+  transform: scale(1.05);
+}
+
+.nhsuk-video-call__control-button:hover:not(.nhsuk-video-call__control-button--end) {
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.nhsuk-video-call__shortcuts {
+  text-align: center;
+  margin-top: 8px;
+}
+
+.nhsuk-video-call__shortcuts-text {
+  font-size: 0.75rem;
+  color: var(--nhs-secondary-text-color);
+  margin: 0;
+}
+
+/* NHS Status Badge Variants for Video Calls */
+.nhsuk-video-call__status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.nhsuk-video-call__status-badge--connected {
+  background-color: var(--nhs-success-color);
+  color: var(--nhs-white);
+}
+
+.nhsuk-video-call__status-badge--connecting {
+  background-color: var(--nhs-warning-color);
+  color: var(--nhs-text-color);
+}
+
+.nhsuk-video-call__status-badge--error {
+  background-color: var(--nhs-error-color);
+  color: var(--nhs-white);
+}
+
+.nhsuk-video-call__status-badge--initializing {
+  background-color: var(--nhs-mid-grey);
+  color: var(--nhs-white);
+}
+
+/* Responsive Design for Video Calls */
+@media (max-width: 768px) {
+  .nhsuk-video-call__local-video {
+    width: 120px;
+    height: 90px;
+    top: 8px;
+    right: 8px;
+  }
+
+  .nhsuk-video-call__controls-row {
+    gap: 12px;
+  }
+
+  .nhsuk-video-call__control-button {
+    width: 44px;
+    height: 44px;
+  }
+
+  .nhsuk-video-call__participant-info {
+    bottom: 60px;
+    left: 8px;
+    width: calc(100% - 32px);
+  }
+
+  .nhsuk-header__user-menu {
+    margin-left: 8px;
+  }
+
+  .nhsuk-header__user-button {
+    padding: 6px 8px;
+    font-size: 14px;
+  }
+
+  .nhsuk-header__user-name {
+    display: none;
+  }
+
+  .nhsuk-header__user-dropdown {
+    right: -8px;
+    min-width: 180px;
+  }
+}
