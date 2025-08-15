@@ -13,7 +13,7 @@ public class JwtResponse {
     private String lastName;
     private List<String> roles;
 
-    public JwtResponse(String accessToken, UUID userId, String username, String email, 
+    public JwtResponse(String accessToken, UUID userId, String username, String email,
                       String firstName, String lastName, List<String> roles) {
         this.token = accessToken;
         this.userId = userId;

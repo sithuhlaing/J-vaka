@@ -1,12 +1,13 @@
 package com.example.auth.model;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -33,11 +34,15 @@ public class Message {
     @Column(name = "message_type")
     private MessageType messageType = MessageType.TEXT;
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    private Map<String, Object> attachments;
+    @OneToMany(mappedBy = "message", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @JsonManagedReference
+    private List<Attachment> attachments = new ArrayList<>();
 
     @Column(name = "is_deleted")
     private Boolean isDeleted = false;
+
+    @Column(name = "is_edited")
+    private Boolean isEdited = false;
 
     @Column(name = "sent_at")
     private LocalDateTime sentAt;
@@ -95,11 +100,11 @@ public class Message {
         this.messageType = messageType;
     }
 
-    public Map<String, Object> getAttachments() {
+    public List<Attachment> getAttachments() {
         return attachments;
     }
 
-    public void setAttachments(Map<String, Object> attachments) {
+    public void setAttachments(List<Attachment> attachments) {
         this.attachments = attachments;
     }
 
@@ -117,5 +122,13 @@ public class Message {
 
     public void setSentAt(LocalDateTime sentAt) {
         this.sentAt = sentAt;
+    }
+
+    public Boolean getIsEdited() {
+        return isEdited;
+    }
+
+    public void setIsEdited(Boolean isEdited) {
+        this.isEdited = isEdited;
     }
 }

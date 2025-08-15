@@ -2,7 +2,8 @@ package com.example.auth.controller;
 
 import com.example.auth.dto.*;
 import com.example.auth.model.EmploymentStatus;
-import com.example.auth.security.UserPrincipal;
+import com.example.auth.model.User;
+import com.example.auth.repository.UserRepository;
 import com.example.auth.service.EmployeeProfileService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -38,6 +39,9 @@ public class EmployeeProfileController {
     @Autowired
     private EmployeeProfileService employeeProfileService;
 
+    @Autowired
+    private UserRepository userRepository;
+
     /**
      * Create a new employee profile
      */
@@ -49,12 +53,13 @@ public class EmployeeProfileController {
             HttpServletRequest httpRequest) {
         
         try {
-            UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+            User currentUser = userRepository.findByUsername(authentication.getName())
+                    .orElseThrow(() -> new RuntimeException("User not found"));
             EmployeeProfileResponse response = employeeProfileService.createEmployeeProfile(
-                request, userPrincipal.getUserId());
+                request, currentUser.getUserId());
             
             logger.info("Employee profile created successfully for: {} by user: {}", 
-                       response.getEmployeeNumber(), userPrincipal.getUsername());
+                       response.getEmployeeNumber(), currentUser.getUsername());
             
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
             
@@ -78,9 +83,8 @@ public class EmployeeProfileController {
         try {
             EmployeeProfileResponse response = employeeProfileService.updatePersonalInformation(employeeId, request);
             
-            UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
             logger.info("Personal information updated for employee: {} by user: {}", 
-                       employeeId, userPrincipal.getUsername());
+                       employeeId, authentication.getName());
             
             return ResponseEntity.ok(response);
             
@@ -124,9 +128,8 @@ public class EmployeeProfileController {
         try {
             EmployeeProfileResponse response = employeeProfileService.manageEmploymentStatus(employeeId, request);
             
-            UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
             logger.info("Employment status updated for employee: {} to {} by user: {}", 
-                       employeeId, request.getStatus(), userPrincipal.getUsername());
+                       employeeId, request.getStatus(), authentication.getName());
             
             return ResponseEntity.ok(response);
             
@@ -249,10 +252,11 @@ public class EmployeeProfileController {
     @PreAuthorize("hasRole('EMPLOYEE')")
     public ResponseEntity<?> getMyProfile(Authentication authentication) {
         try {
-            UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+            User currentUser = userRepository.findByUsername(authentication.getName())
+                    .orElseThrow(() -> new RuntimeException("User not found"));
             // This would require a method to find employee by user ID
             // For now, returning a message that this needs to be implemented
-            return ResponseEntity.ok(new MessageResponse("Feature to be implemented: Get employee by user ID"));
+            return ResponseEntity.ok(new MessageResponse("Feature to be implemented: Get employee by user ID " + currentUser.getUserId()));
         } catch (Exception e) {
             logger.error("Error retrieving current user's profile: {}", e.getMessage());
             return ResponseEntity.badRequest()
@@ -265,9 +269,10 @@ public class EmployeeProfileController {
      */
     public boolean isOwnProfile(UUID employeeId, Authentication authentication) {
         try {
-            UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+            User currentUser = userRepository.findByUsername(authentication.getName())
+                    .orElseThrow(() -> new RuntimeException("User not found"));
             EmployeeProfileResponse profile = employeeProfileService.getEmployeeProfile(employeeId);
-            return profile.getUserId().equals(userPrincipal.getUserId());
+            return profile.getUserId().equals(currentUser.getUserId());
         } catch (Exception e) {
             logger.error("Error checking profile ownership: {}", e.getMessage());
             return false;
