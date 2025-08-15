@@ -1,14 +1,16 @@
 "use client"
 
-import { useEffect } from 'react'
-import { useAuthStore } from '@/lib/state/auth-store'
+import { useEffect, useState } from "react"
+import { useAuthStore } from "@/lib/state/auth-store"
 
-export function AuthHydration() {
-  const hydrate = useAuthStore((state) => state.hydrate)
+export function AuthHydration({ children }: { children: React.ReactNode }) {
+  const [hydrated, setHydrated] = useState(false)
+  const hydrateStore = useAuthStore((state) => state.hydrate)
 
   useEffect(() => {
-    hydrate()
-  }, [hydrate])
+    hydrateStore()
+    setHydrated(true)
+  }, [hydrateStore])
 
-  return null
+  return hydrated ? <>{children}</> : null
 }

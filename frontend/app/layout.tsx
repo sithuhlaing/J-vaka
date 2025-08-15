@@ -35,9 +35,10 @@ html {
         <AuthProvider>
           <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} disableTransitionOnChange>
             <UXProvider>
-              <AuthHydration />
-              {children}
-              <Toaster />
+              <AuthHydration>
+                {children}
+                <Toaster />
+              </AuthHydration>
             </UXProvider>
           </ThemeProvider>
         </AuthProvider>

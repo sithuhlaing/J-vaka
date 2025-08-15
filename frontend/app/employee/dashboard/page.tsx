@@ -13,11 +13,7 @@ import { useAuthStore } from "@/lib/state/auth-store"
 
 export default function EmployeeDashboard() {
   const router = useRouter()
-  const { user, isAuthenticated, hydrate } = useAuthStore()
-
-  useEffect(() => {
-    hydrate()
-  }, [hydrate])
+  const { user, isAuthenticated } = useAuthStore()
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -29,9 +25,9 @@ export default function EmployeeDashboard() {
     return <div>Loading...</div>
   }
 
-  const userHealthRecord = mockHealthRecords.find((hr) => hr.employee_id === user.id)
-  const userAppointments = mockAppointments.filter((apt) => apt.employee_id === user.id)
-  const userNotifications = mockNotifications.filter((not) => not.user_id === user.id)
+  const userHealthRecord = mockHealthRecords.find((hr) => hr.employeeId === user.id)
+  const userAppointments = mockAppointments.filter((apt) => apt.employeeId === user.id)
+  const userNotifications = mockNotifications.filter((not) => not.userId === user.id)
 
   const handleJoinVideo = (appointmentId: string) => {
     router.push(`/employee/video-call/${appointmentId}`)
@@ -46,7 +42,7 @@ export default function EmployeeDashboard() {
       <div className="container mx-auto p-6 space-y-6">
         {/* Welcome Header */}
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold">Welcome back, {user.first_name}!</h1>
+          <h1 className="text-3xl font-bold">Welcome back, {user.firstName}!</h1>
           <p className="text-muted-foreground">
             {new Date().toLocaleDateString("en-GB", {
               weekday: "long",

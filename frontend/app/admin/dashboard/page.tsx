@@ -5,8 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { Users, Shield, Database, Activity, AlertTriangle, CheckCircle, TrendingUp } from "lucide-react"
+import { useRouter } from "next/navigation"
 
 export default function AdminDashboardPage() {
+  const router = useRouter()
+
   const systemStats = {
     totalUsers: 1247,
     activeUsers: 892,
@@ -150,19 +153,31 @@ export default function AdminDashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <Button className="h-20 flex-col">
+              <Button className="h-20 flex-col" onClick={() => router.push("/admin/users")}>
                 <Users className="h-6 w-6 mb-2" />
                 User Management
               </Button>
-              <Button variant="outline" className="h-20 flex-col bg-transparent">
+              <Button
+                variant="outline"
+                className="h-20 flex-col bg-transparent"
+                onClick={() => router.push("/admin/settings")}
+              >
                 <Shield className="h-6 w-6 mb-2" />
                 Security Settings
               </Button>
-              <Button variant="outline" className="h-20 flex-col bg-transparent">
+              <Button
+                variant="outline"
+                className="h-20 flex-col bg-transparent"
+                onClick={() => router.push("/admin/settings")}
+              >
                 <Database className="h-6 w-6 mb-2" />
                 Data Management
               </Button>
-              <Button variant="outline" className="h-20 flex-col bg-transparent">
+              <Button
+                variant="outline"
+                className="h-20 flex-col bg-transparent"
+                onClick={() => router.push("/admin/messages")}
+              >
                 <TrendingUp className="h-6 w-6 mb-2" />
                 System Reports
               </Button>
