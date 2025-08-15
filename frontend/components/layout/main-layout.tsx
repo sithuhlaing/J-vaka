@@ -4,7 +4,7 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import { Calendar, FileText, MessageSquare, Home, Users, BarChart3, Shield, Menu, ChevronDown } from "lucide-react"
-import type { User } from "@/lib/mock-data"
+import type { UserData } from "@/lib/mock-data"
 import { useAuthStore } from "@/lib/state/auth-store"
 import { cn } from "@/lib/utils"
 import { ProfileSettingsPanel } from "@/components/ui/profile-settings-panel"
@@ -19,7 +19,17 @@ export function MainLayout({ children }: MainLayoutProps) {
   const [profilePanelOpen, setProfilePanelOpen] = useState(false)
   const router = useRouter()
   const pathname = usePathname()
-  const { user, logout: authLogout } = useAuthStore()
+  const { user, isAuthenticated, logout: authLogout, hydrate } = useAuthStore()
+
+  useEffect(() => {
+    hydrate()
+  }, [hydrate])
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.push("/login")
+    }
+  }, [isAuthenticated, router])
 
   useEffect(() => {
     const handleOpenProfilePanel = () => {
@@ -75,14 +85,11 @@ export function MainLayout({ children }: MainLayoutProps) {
     return baseItems
   }
 
-  const navigationItems = getNavigationItems()
-
-  // This check is important to prevent rendering the layout for a null user
-  // which can happen briefly during logout or if hydration fails.
   if (!user) {
-    // Render nothing or a minimal loader, as AuthHydration should handle the main loading state.
-    return null
+    return <div>Loading...</div>
   }
+
+  const navigationItems = getNavigationItems()
 
   return (
     <div className="min-h-screen bg-background">
@@ -131,7 +138,7 @@ export function MainLayout({ children }: MainLayoutProps) {
                   aria-haspopup="true"
                 >
                   <ChevronDown className="nhsuk-icon nhsuk-icon--size-16" aria-hidden="true" />
-                  <span className="nhsuk-header__user-name">{`${user.firstName} ${user.lastName}`}</span>
+                  <span className="nhsuk-header__user-name">{user.name}</span>
                 </button>
 
                 {userDropdownOpen && (

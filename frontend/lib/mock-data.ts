@@ -216,7 +216,7 @@ export const mockAppointments: Appointment[] = [
     appointmentMode: "virtual",
     scheduledDate: new Date(Date.now() + 30 * 60000).toISOString(), // 30 minutes from now
     durationMinutes: 30,
-    status: "scheduled",
+    status: "confirmed",
     reason: "Mental health check-in",
     location: "Video Call",
     notes: "",

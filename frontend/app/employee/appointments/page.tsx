@@ -9,16 +9,14 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Calendar, Clock, Video, MapPin, Plus } from "lucide-react"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { type User, type Appointment, mockAppointments } from "@/lib/mock-data"
 
 export default function EmployeeAppointments() {
   const [user, setUser] = useState<User | null>(null)
   const [showWizard, setShowWizard] = useState(false)
   const [loading, setLoading] = useState(true)
-  const [rescheduleId, setRescheduleId] = useState<string | null>(null)
   const router = useRouter()
-  const searchParams = useSearchParams()
 
   useEffect(() => {
     const loadUserData = async () => {
@@ -34,14 +32,6 @@ export default function EmployeeAppointments() {
     
     loadUserData()
   }, [])
-
-  useEffect(() => {
-    const appointmentToReschedule = searchParams.get("reschedule")
-    if (appointmentToReschedule) {
-      setRescheduleId(appointmentToReschedule)
-      setShowWizard(true)
-    }
-  }, [searchParams])
 
   if (loading) {
     return (
@@ -63,16 +53,11 @@ export default function EmployeeAppointments() {
     return (
       <MainLayout>
         <AppointmentWizard
-          rescheduleId={rescheduleId}
           onComplete={(data) => {
             console.log("Appointment booked:", data)
             setShowWizard(false)
-            setRescheduleId(null)
           }}
-          onCancel={() => {
-            setShowWizard(false)
-            setRescheduleId(null)
-          }}
+          onCancel={() => setShowWizard(false)}
         />
       </MainLayout>
     )
@@ -81,11 +66,6 @@ export default function EmployeeAppointments() {
   const userAppointments = mockAppointments.filter((apt) => apt.employeeId === user.id)
   const upcomingAppointments = userAppointments.filter((apt) => new Date(apt.scheduledDate) > new Date())
   const pastAppointments = userAppointments.filter((apt) => new Date(apt.scheduledDate) <= new Date())
-
-  const handleRescheduleClick = (appointmentId: string) => {
-    setRescheduleId(appointmentId)
-    setShowWizard(true)
-  }
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -138,7 +118,7 @@ export default function EmployeeAppointments() {
                 Join Call
               </Button>
             )}
-            <Button variant="outline" size="sm" onClick={() => handleRescheduleClick(appointment.id)}>
+            <Button variant="outline" size="sm">
               Reschedule
             </Button>
           </div>

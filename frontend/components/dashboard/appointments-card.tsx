@@ -15,8 +15,8 @@ interface AppointmentsCardProps {
 
 export function AppointmentsCard({ appointments, onBookNew, onJoinVideo, onReschedule }: AppointmentsCardProps) {
   const upcomingAppointments = appointments
-    .filter((apt) => apt.status === "scheduled" && new Date(apt.scheduledDate) > new Date())
-    .sort((a, b) => new Date(a.scheduledDate).getTime() - new Date(b.scheduledDate).getTime())
+    .filter((apt) => apt.status === "scheduled")
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
     .slice(0, 3)
 
   const getTypeColor = (type: string) => {
@@ -35,7 +35,7 @@ export function AppointmentsCard({ appointments, onBookNew, onJoinVideo, onResch
   }
 
   const isVideoCallReady = (appointment: Appointment) => {
-    const appointmentDateTime = new Date(appointment.scheduledDate)
+    const appointmentDateTime = new Date(`${appointment.date}T${appointment.time}`)
     const now = new Date()
     const timeDiff = appointmentDateTime.getTime() - now.getTime()
     const minutesDiff = timeDiff / (1000 * 60)
@@ -65,22 +65,15 @@ export function AppointmentsCard({ appointments, onBookNew, onJoinVideo, onResch
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
                       <Calendar className="h-4 w-4 text-muted-foreground" />
-                      <span className="font-medium">
-                        {new Date(appointment.scheduledDate).toLocaleDateString()}
-                      </span>
+                      <span className="font-medium">{new Date(appointment.date).toLocaleDateString()}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Clock className="h-4 w-4 text-muted-foreground" />
-                      <span>
-                        {new Date(appointment.scheduledDate).toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </span>
+                      <span>{appointment.time}</span>
                     </div>
                   </div>
-                  <Badge variant={getTypeColor(appointment.appointmentType)} className="capitalize">
-                    {appointment.appointmentType.replace("_", " ")}
+                  <Badge variant={getTypeColor(appointment.type)} className="capitalize">
+                    {appointment.type.replace("_", " ")}
                   </Badge>
                 </div>
 

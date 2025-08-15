@@ -10,7 +10,6 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import { KeyboardNavigation, announceToScreenReader } from "@/components/ui/keyboard-navigation"
 import { Calendar, Clock, Video, MapPin, CheckCircle, ArrowLeft, ArrowRight } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { mockAppointments } from "@/lib/mock-data"
 
 interface AppointmentData {
   type: string
@@ -25,16 +24,11 @@ interface AppointmentData {
 }
 
 interface AppointmentWizardProps {
-  rescheduleId?: string | null
   onComplete: (appointmentData: AppointmentData) => void
   onCancel: () => void
 }
 
-export function AppointmentWizard({
-  rescheduleId,
-  onComplete,
-  onCancel,
-}: AppointmentWizardProps) {
+export function AppointmentWizard({ onComplete, onCancel }: AppointmentWizardProps) {
   const [currentStep, setCurrentStep] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
   const [formData, setFormData] = useState<AppointmentData>({
@@ -45,33 +39,6 @@ export function AppointmentWizard({
     reason: "",
     preferences: {}
   })
-
-  useEffect(() => {
-    if (rescheduleId) {
-      const appointmentToReschedule = mockAppointments.find(
-        (apt) => apt.id === rescheduleId
-      )
-      if (appointmentToReschedule) {
-        setFormData({
-          type: appointmentToReschedule.appointmentType,
-          date: new Date(appointmentToReschedule.scheduledDate).toLocaleDateString("en-CA"), // YYYY-MM-DD
-          time: new Date(appointmentToReschedule.scheduledDate).toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: false,
-          }),
-          mode: appointmentToReschedule.appointmentMode,
-          reason: appointmentToReschedule.reason,
-          preferences: {}, // Preferences are not in mock data, reset them
-        })
-        // Optionally, move to a specific step, e.g., date/time selection
-        setCurrentStep(2)
-        announceToScreenReader(
-          `Rescheduling appointment. Please select a new date and time.`
-        )
-      }
-    }
-  }, [rescheduleId])
 
   const steps = [
     { number: 1, title: "Appointment Type", description: "Select the type of appointment" },
